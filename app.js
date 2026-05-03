@@ -2,11 +2,11 @@
 // Reads inputs → calls engine.computeFull → renders.
 // All DOM construction uses textContent + createElement for safety.
 
-import { computeFull, defaultInput, formatINR, formatLakh, recommendSystemType, systemTypeAdvisory, pickOptimalSize } from './engine.js?v=5';
+import { computeFull, defaultInput, formatINR, formatLakh, recommendSystemType, systemTypeAdvisory, pickOptimalSize } from './engine.js?v=7';
 import {
   DISCOMS, STATE_DEFAULTS, LIFESTYLE_STAMPS, scaleStampToTariff, OUTAGE_STOPS, MONTH_LABELS,
-} from './constants.js?v=4';
-import { mountSystemDiagrams, updateBillExamples, setActiveDiagram, renderSizingPrice } from './diagrams.js?v=5';
+} from './constants.js?v=7';
+import { mountSystemDiagrams, updateBillExamples, setActiveDiagram, renderSizingPrice } from './diagrams.js?v=7';
 
 /* ──────────────────────────────────────────────────────────
    STATE
@@ -752,9 +752,12 @@ function renderCumulativeChart(r) {
   svg.appendChild(svgEl('path', { d: areaPath, fill: 'var(--amber-wash)', opacity: '0.6' }));
   svg.appendChild(svgEl('path', { d: solarPath, fill: 'none', stroke: 'var(--amber)', 'stroke-width': '2' }));
 
-  // Payback marker
+  // Payback marker — x-axis maps data index 0 to year 1 (end of year 1),
+  // index 24 to year 25. So a payback of P years sits at xScale(P − 1):
+  // P=1.0 lands at the leftmost data point, P=4.0 at xScale(3) = end of yr 4.
   if (r.metrics.payback_simple !== null && r.metrics.payback_simple < years.length) {
-    const px = pad.l + (r.metrics.payback_simple / Math.max(1, years.length - 1)) * innerW;
+    const pbIdx = Math.max(0, r.metrics.payback_simple - 1);
+    const px = pad.l + (pbIdx / Math.max(1, years.length - 1)) * innerW;
     const py = yScale(0);
     svg.appendChild(svgEl('line', { x1: px, y1: py - 6, x2: px, y2: py + 6, stroke: 'var(--amber-deep)', 'stroke-width': '1.5' }));
     svg.appendChild(svgEl('circle', { cx: px, cy: py, r: '3', fill: 'var(--amber-deep)' }));
