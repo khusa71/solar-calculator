@@ -1218,6 +1218,14 @@ input[type="checkbox"] {
   text-transform: uppercase;
 }
 .colophon__line--small { font-size: 0.75rem; color: var(--ink-mute); font-style: italic; }
+.colophon__doc-link {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--amber-deep);
+  white-space: nowrap;
+}
 .link { color: var(--amber-deep); }
 
 /* ============================================================

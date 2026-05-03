@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How the math works — The Solar Ledger</title>
+  <meta name="description" content="The methodology behind The Solar Ledger — every assumption, every formula, every number traced back to its source.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ==== Doc-page-specific styles ==== */
+    .doc-hero {
+      padding: 3rem var(--gutter) 2rem;
+      max-width: 80ch;
+      margin: 0 auto;
+    }
+    .doc-hero__title {
+      font-family: var(--serif);
+      font-variation-settings: 'opsz' 80, 'SOFT' 60, 'wght' 380;
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-style: italic;
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin: 0.6rem 0 1rem;
+      color: var(--ink);
+    }
+    .doc-hero__sub {
+      font-family: var(--serif);
+      font-size: 1.05rem;
+      line-height: 1.55;
+      color: var(--ink-soft);
+      max-width: 60ch;
+    }
+    .doc-hero__back {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      border-bottom: none;
+    }
+    .doc-hero__back:hover { color: var(--amber-deep); }
+
+    .doc-toc {
+      max-width: 80ch;
+      margin: 0 auto;
+      padding: 1.25rem var(--gutter);
+      border-top: 1px solid var(--rule-soft);
+      border-bottom: 1px solid var(--rule-soft);
+      background: var(--paper-deep);
+    }
+    .doc-toc__title {
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      display: block;
+      margin-bottom: 0.7rem;
+    }
+    .doc-toc ol {
+      column-count: 2;
+      column-gap: 2rem;
+      list-style: none;
+      counter-reset: toc;
+    }
+    .doc-toc li {
+      counter-increment: toc;
+      font-family: var(--sans);
+      font-size: 0.86rem;
+      line-height: 1.45;
+      padding: 0.18rem 0;
+      break-inside: avoid;
+    }
+    .doc-toc li::before {
+      content: counter(toc, decimal-leading-zero) ' · ';
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--ink-mute);
+      letter-spacing: 0.04em;
+    }
+    .doc-toc a { color: var(--ink); border-bottom: none; }
+    .doc-toc a:hover { color: var(--amber-deep); }
+    @media (max-width: 720px) { .doc-toc ol { column-count: 1; } }
+
+    .doc-page {
+      max-width: 80ch;
+      margin: 0 auto;
+      padding: 2.5rem var(--gutter) 3.5rem;
+      font-family: var(--serif);
+      font-size: 1.02rem;
+      line-height: 1.65;
+      color: var(--ink-soft);
+    }
+    .doc-page p { margin: 0 0 1rem; }
+    .doc-page p strong { color: var(--ink); font-weight: 500; }
+
+    .doc-section {
+      padding-top: 2.5rem;
+      margin-top: 2.5rem;
+      border-top: 1px dashed var(--rule-soft);
+    }
+    .doc-section:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
+    .doc-section h2 {
+      font-family: var(--serif);
+      font-variation-settings: 'opsz' 60, 'SOFT' 50, 'wght' 400;
+      font-size: clamp(1.4rem, 3vw, 1.85rem);
+      font-style: italic;
+      line-height: 1.2;
+      letter-spacing: -0.012em;
+      color: var(--ink);
+      margin: 0.4rem 0 0.85rem;
+    }
+    .doc-section h3 {
+      font-family: var(--sans);
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 1.4rem 0 0.5rem;
+      letter-spacing: 0.005em;
+    }
+
+    .formula {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+      line-height: 1.7;
+      background: var(--paper-deep);
+      border-left: 2px solid var(--amber-deep);
+      padding: 0.85rem 1.1rem;
+      margin: 0.7rem 0 1rem;
+      color: var(--ink);
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
+    .formula em {
+      font-family: var(--serif);
+      font-style: italic;
+      color: var(--ink-soft);
+      font-size: 0.86rem;
+    }
+    .formula .comment {
+      color: var(--ink-mute);
+      font-style: italic;
+      font-family: var(--serif);
+    }
+
+    .doc-page ul, .doc-page ol.numbered {
+      margin: 0 0 1rem 1.1rem;
+    }
+    .doc-page li {
+      margin: 0.3rem 0;
+      padding-left: 0.2rem;
+    }
+    .doc-page li::marker { color: var(--ink-mute); }
+
+    .doc-page table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0 1.25rem;
+      font-family: var(--sans);
+      font-size: 0.84rem;
+    }
+    .doc-page th {
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-mute);
+      font-weight: 500;
+      padding: 0.55rem 0.85rem 0.55rem 0;
+      border-bottom: 1.5px solid var(--rule);
+    }
+    .doc-page td {
+      padding: 0.5rem 0.85rem 0.5rem 0;
+      border-bottom: 1px solid var(--rule-soft);
+      color: var(--ink-soft);
+      vertical-align: top;
+    }
+    .doc-page td:first-child { color: var(--ink); }
+    .doc-page td.mono { font-family: var(--mono); font-size: 0.82rem; }
+
+    .callout {
+      background: var(--paper-deep);
+      border: 1px solid var(--rule-soft);
+      padding: 1rem 1.15rem;
+      margin: 1rem 0 1.25rem;
+      border-radius: 2px;
+    }
+    .callout__label {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--amber-deep);
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+
+    .caveat-list li {
+      padding-left: 0.4rem;
+    }
+    .caveat-list li strong { color: var(--ink); font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ======== MASTHEAD ======== -->
+<header class="masthead">
+  <div class="masthead__rule rule--top" aria-hidden="true"></div>
+  <div class="masthead__inner">
+    <div class="brand">
+      <svg class="brand__mark" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="7" fill="currentColor"/>
+        <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="20" y1="2" x2="20" y2="9"/>
+          <line x1="20" y1="31" x2="20" y2="38"/>
+          <line x1="2" y1="20" x2="9" y2="20"/>
+          <line x1="31" y1="20" x2="38" y2="20"/>
+          <line x1="7" y1="7" x2="12" y2="12"/>
+          <line x1="28" y1="28" x2="33" y2="33"/>
+          <line x1="33" y1="7" x2="28" y2="12"/>
+          <line x1="12" y1="28" x2="7" y2="33"/>
+        </g>
+      </svg>
+      <div class="brand__text">
+        <h1 class="brand__name">The Solar Ledger</h1>
+        <p class="brand__tag">A decision tool for Indian rooftops</p>
+      </div>
+    </div>
+    <div class="masthead__meta">
+      <span class="dateline">METHODOLOGY · APPENDIX A</span>
+      <span class="vol">HOW THE NUMBERS ARE MADE</span>
+    </div>
+  </div>
+  <div class="masthead__rule rule--double" aria-hidden="true">
+    <span></span><span></span>
+  </div>
+</header>
+
+<!-- ======== HERO ======== -->
+<section class="doc-hero">
+  <a href="index.html" class="doc-hero__back">← Back to the Ledger</a>
+  <h1 class="doc-hero__title">How the math works.</h1>
+  <p class="doc-hero__sub">
+    Every figure on the front page is derived, not declared. This page traces each output back to its inputs, the formula that connects them, and the assumption baked into each constant. If you disagree with a number, you should be able to find exactly which assumption to argue with.
+  </p>
+</section>
+
+<!-- ======== TOC ======== -->
+<nav class="doc-toc">
+  <span class="doc-toc__title">Contents</span>
+  <ol>
+    <li><a href="#inputs">The six inputs you give</a></li>
+    <li><a href="#bill">Modeling your bill</a></li>
+    <li><a href="#generation">Modeling generation</a></li>
+    <li><a href="#savings">Net metering &amp; the APPC haircut</a></li>
+    <li><a href="#costs">Cost build-up</a></li>
+    <li><a href="#subsidies">Subsidies</a></li>
+    <li><a href="#cashflow">25-year cashflow</a></li>
+    <li><a href="#metrics">IRR, payback, net gain</a></li>
+    <li><a href="#alts">Comparisons against FD &amp; equity</a></li>
+    <li><a href="#verdict">The verdict logic</a></li>
+    <li><a href="#defaults">Defaults &amp; constants</a></li>
+    <li><a href="#caveats">What we deliberately don't model</a></li>
+  </ol>
+</nav>
+
+<!-- ======== BODY ======== -->
+<article class="doc-page">
+
+  <!-- 1. INPUTS -->
+  <section class="doc-section" id="inputs">
+    <span class="kicker">§01</span>
+    <h2>The six inputs you give.</h2>
+    <p>Six inputs is the minimum for an honest answer. Anything below that is a guess; anything above that is theatre. Here's what each one drives:</p>
+    <table>
+      <thead>
+        <tr><th>Input</th><th>Drives</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Peak &amp; low monthly bill (or lifestyle stamp)</td><td>The 12-month bill curve, annual consumption (back-calculated from tariff)</td></tr>
+        <tr><td>State / DISCOM</td><td>Tariff (₹/unit), sun zone, net-metering settlement period, state subsidy</td></tr>
+        <tr><td>Roof type</td><td>Mounting cost adder; tilt/orientation derate (sloped only)</td></tr>
+        <tr><td>Grid reliability</td><td>Outage hours/day → battery sizing, recommended system type</td></tr>
+        <tr><td>System type</td><td>On-grid / Hybrid / Off-grid — changes cost, savings model, outage value</td></tr>
+        <tr><td>System size (kW)</td><td>Generation, cost, subsidy, and everything downstream</td></tr>
+      </tbody>
+    </table>
+    <p>Advanced settings let you override panel technology, shading, cost-per-kW, tariff escalation, alt-investment rate, and analysis horizon. All have sensible defaults — they exist to let skeptics stress-test, not to be required.</p>
+  </section>
+
+  <!-- 2. BILL -->
+  <section class="doc-section" id="bill">
+    <span class="kicker">§02</span>
+    <h2>Modeling your bill.</h2>
+    <p>Indian residential bills swing strongly with seasons — May–June peak, December–January low. Asking for 12 separate values is friction; asking for one annual figure loses the structure that makes solar pay (peak bills determine solar's break-even).</p>
+    <p>So we ask for two anchor points: <strong>peak summer</strong> and <strong>low winter</strong>. Then we interpolate across a fixed 12-month shape curve calibrated against typical Indian load patterns:</p>
+    <div class="formula">bill[m] = bill_low + (bill_peak − bill_low) × shape[m]
+
+<span class="comment">shape =</span> [0.00, 0.05, 0.20, 0.50, 1.00, 1.00, 0.75, 0.70, 0.50, 0.25, 0.10, 0.00]
+<span class="comment">months =</span> Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
+</div>
+    <p>From the bill we back-calculate annual consumption: <span class="mono">consumption_kWh = annual_bill / tariff</span>. We don't ask the user for kWh — most don't know it, but everyone knows their bill.</p>
+  </section>
+
+  <!-- 3. GENERATION -->
+  <section class="doc-section" id="generation">
+    <span class="kicker">§03</span>
+    <h2>Modeling generation.</h2>
+    <p>One kWp of solar in India produces ~1,400–1,750 kWh/year depending on location and conditions. We model the monthly arithmetic explicitly so the user can see <em>why</em> July generates less than May:</p>
+    <div class="formula">generation[m] =
+    kw × <span class="comment">«peak sun hours»</span>
+       × days_in_month[m]
+       × seasonal_factor[m]   <span class="comment">// 0.75–0.95 per month</span>
+       × (1 − temp_loss[m])   <span class="comment">// hot panels lose efficiency</span>
+       × shading_factor       <span class="comment">// 1.00 / 0.88 / 0.75</span>
+       × roof_factor          <span class="comment">// 1.00 flat / 0.93 sloped</span>
+       × inverter_factor      <span class="comment">// 0.97</span>
+       × soiling_factor       <span class="comment">// 0.97 — dust accumulation</span>
+</div>
+    <h3>Peak sun hours by zone</h3>
+    <p>Daily kWh per installed kW the panel would produce under standard test conditions:</p>
+    <table>
+      <thead><tr><th>Zone</th><th>PSH</th><th>States</th></tr></thead>
+      <tbody>
+        <tr><td>Very high</td><td class="mono">5.5</td><td>Rajasthan, Gujarat, Madhya Pradesh</td></tr>
+        <tr><td>High</td><td class="mono">5.0</td><td>UP, Bihar, Haryana, Punjab, Telangana, Delhi</td></tr>
+        <tr><td>Moderate</td><td class="mono">4.8</td><td>Maharashtra, Karnataka, Tamil Nadu, Andhra Pradesh, Odisha</td></tr>
+        <tr><td>Lower</td><td class="mono">4.2</td><td>Kerala, West Bengal, NE states, J&amp;K, Himachal</td></tr>
+      </tbody>
+    </table>
+    <h3>Temperature loss</h3>
+    <p>Solar panels lose efficiency when hot — counterintuitively, cool sunny days in November beat hot June afternoons. We assume panel temperature runs ~25 °C above ambient, then apply a per-degree coefficient:</p>
+    <div class="formula">temp_loss = max(0, panel_temp − 25 °C) × tech_coeff
+TOPCon coeff:    0.0029 / °C       <span class="comment">// newer, less heat-sensitive</span>
+Mono PERC coeff: 0.0035 / °C
+</div>
+    <p>For Rajasthan in May (panel temp ~63 °C), the temp loss alone is ~11% on TOPCon, ~13% on Mono PERC.</p>
+
+    <h3>Shading and roof</h3>
+    <p>Shading is a single ratio applied to all months. It's the user's job to estimate it honestly — partial means an obstruction shadows ~12% of the array somewhere during the day; heavy means it's a fundamentally suboptimal site (don't build).</p>
+    <p>Roof type's main role is cost: sloped tiled roofs need extra mounting hardware (₹3,000/kW), flat RCC and terraces don't. Sloped roofs additionally take a 7% generation derate to capture typical real-world tilt/orientation losses — sloped roofs lock the panel to the roof's pitch and azimuth, which is rarely the optimal angle for the latitude.</p>
+  </section>
+
+  <!-- 4. NET METERING -->
+  <section class="doc-section" id="savings">
+    <span class="kicker">§04</span>
+    <h2>Net metering &amp; the APPC haircut.</h2>
+    <p>Generation isn't savings. Savings are the <em>realised</em> value of each kWh — and that value depends on what the DISCOM does with kWh you export. India has two settlement models:</p>
+
+    <h3>Annual settlement</h3>
+    <p>Most northern and southern states. Surplus units bank against deficit units across the year. At year-end:</p>
+    <div class="formula">offset_units  = min(annual_gen, annual_consumption)
+surplus_units = max(0, annual_gen − annual_consumption)
+
+annual_savings = offset_units × tariff
+               + surplus_units × APPC_rate    <span class="comment">// ~₹3.25/unit</span>
+</div>
+    <p>So if your panels generate exactly your consumption, every kWh is worth the full retail tariff. If they generate <em>more</em> than you consume, the surplus is paid at the Average Power Purchase Cost — a deliberately low wholesale rate (~₹3.25/unit in 2026), not the retail tariff. That's the <strong>APPC haircut</strong>: oversize and your marginal kWh earns less than half what you'd save by consuming it.</p>
+
+    <h3>Monthly settlement</h3>
+    <p>Maharashtra, Gujarat, West Bengal. Each month nets independently. You can't bank July's surplus to offset December's bill — June surplus pays at APPC even if December needs the units. This penalises seasonal sizing: oversize for May–June and you bleed APPC every month.</p>
+    <div class="formula">monthly_savings[m] = min(gen[m], consumption[m]) × tariff
+                   + max(0, gen[m] − consumption[m]) × APPC
+</div>
+
+    <h3>Without net metering</h3>
+    <p>If the user disables net metering, only daytime self-consumption counts. We assume 65% of the day's load can be served live (the rest happens in evening/night when there's no sun):</p>
+    <div class="formula">monthly_savings[m] = min(gen[m], consumption[m] × 0.65) × tariff</div>
+    <p>This is the worst case for solar economics — every kWh you don't consume in real-time is wasted. Battery systems mitigate this by storing daytime surplus for evening use.</p>
+  </section>
+
+  <!-- 5. COSTS -->
+  <section class="doc-section" id="costs">
+    <span class="kicker">§05</span>
+    <h2>Cost build-up.</h2>
+    <p>The price quoted by an installer is one number. We break it apart:</p>
+    <div class="formula">gross =
+    solar_hardware              <span class="comment">// kw × ₹65,000 default</span>
+  + roof_adder                  <span class="comment">// kw × ₹3,000 if sloped, else 0</span>
+  + battery_cost                <span class="comment">// hybrid + off-grid only</span>
+  + inverter_premium            <span class="comment">// hybrid +₹5k/kW; off-grid +₹15k/kW</span>
+  + critical_load_panel_cost    <span class="comment">// ₹20,000 flat (battery systems)</span>
+</div>
+
+    <h3>Battery sizing</h3>
+    <p><strong>Hybrid</strong> uses the larger of two rules:</p>
+    <ul>
+      <li><em>Evening peak rule:</em> 1 kWh battery per 1 kW solar. Covers ~3–4 hours of household evening load.</li>
+      <li><em>Outage rule:</em> <span class="mono">critical_load × outage_hours × 1.5 / round_trip_eff</span> — sized to keep critical loads on through the typical outage with 50% margin.</li>
+    </ul>
+    <p>Result is rounded up to the next 0.5 kWh. Battery cost = sized kWh × ₹35,000/kWh.</p>
+    <p><strong>Off-grid</strong> sizes for autonomy days (default 2): <span class="mono">battery_kwh = ceil(daily_consumption × autonomy / 0.70)</span> — the 0.70 floor accounts for 80% depth-of-discharge ÷ 92% round-trip efficiency.</p>
+  </section>
+
+  <!-- 6. SUBSIDIES -->
+  <section class="doc-section" id="subsidies">
+    <span class="kicker">§06</span>
+    <h2>Subsidies.</h2>
+    <p>The PM Surya Ghar Muft Bijli Yojana is the central subsidy, applicable to on-grid and hybrid systems (not off-grid). It uses a slab structure capped at 3 kW:</p>
+    <table>
+      <thead><tr><th>System size</th><th>Subsidy band</th></tr></thead>
+      <tbody>
+        <tr><td>First 2 kW</td><td class="mono">₹30,000 per kW</td></tr>
+        <tr><td>kW 2–3</td><td class="mono">₹18,000 per kW</td></tr>
+        <tr><td>Above 3 kW</td><td class="mono">no additional subsidy</td></tr>
+      </tbody>
+    </table>
+    <p>So a 3 kW system gets the maximum: <span class="mono">2 × 30,000 + 1 × 18,000 = ₹78,000</span>. A 5 kW system also gets ₹78,000 — the marginal economics of the 4th and 5th kW are subsidy-free.</p>
+    <p>Some states layer additional subsidies on top. Delhi adds ₹2,000/kW (capped at ₹10,000); Gujarat adds a flat ₹10,000. Off-grid systems are excluded from PM Surya Ghar entirely.</p>
+    <div class="formula">net_cost = max(0, gross_cost − central_subsidy − state_subsidy)</div>
+  </section>
+
+  <!-- 7. CASHFLOW -->
+  <section class="doc-section" id="cashflow">
+    <span class="kicker">§07</span>
+    <h2>25-year cashflow.</h2>
+    <p>Year 1 savings is one figure. The 25-year story has three time-varying lines and one recurring item:</p>
+
+    <h3>Degradation</h3>
+    <p>Panels lose ~0.5% capacity per year, floored at 85%. By year 25, generation is ~88% of year-1 output.</p>
+    <div class="formula">degradation[n] = max(0.85, 1 − 0.005 × (n − 1))</div>
+
+    <h3>Tariff escalation</h3>
+    <p>Indian residential tariffs have risen ~5% annually over the past decade. The user can override (advanced settings); 5% is the default.</p>
+    <div class="formula">escalation[n] = (1 + tariff_escalation) ^ (n − 1)</div>
+
+    <h3>Battery replacements</h3>
+    <p>LFP batteries last ~10 calendar years, or fewer if cycled deeply. We compute a replacement interval and deduct cost at every multiple within the horizon — for a 25-year horizon and a 10-year battery, that's two replacements (Y10 and Y20). Each replacement is priced at <em>that year's</em> battery cost, with 4%/year cost decline applied:</p>
+    <div class="formula">repl_interval = min(10 yrs, cycle_life / annual_cycles)
+repl_cost[year] = battery_kwh × ₹35,000 × (1 − 0.04) ^ year</div>
+    <p>For a 4 kWh battery, Y10 replacement ≈ ₹93,000; Y20 replacement ≈ ₹62,000. The first version of this calculator only modeled one replacement — a quietly significant understatement of hybrid cost. Now we deduct every replacement that falls inside the horizon.</p>
+
+    <h3>Outage value (hybrid only)</h3>
+    <p>Battery backup during outages has economic value: kWh delivered when the grid is down at a 2× premium (it's worth more than retail because nothing else can substitute). Net of round-trip efficiency losses, this becomes an annual recurring positive cashflow.</p>
+
+    <h3>Standby drain (hybrid + off-grid)</h3>
+    <p>Inverters draw ~30 W continuously (~263 kWh/year) just to stay alert for grid changes. At ₹8.50/unit that's ~₹2,235/year — a small but recurring deduction.</p>
+
+    <h3>Putting it together</h3>
+    <div class="formula">savings[n] = annual_savings_yr1 × degradation[n] × escalation[n]
+           + outage_value − standby_drain
+           − battery_replacement_cost (when applicable)
+
+cumulative[n] = cumulative[n−1] + savings[n]
+                <span class="comment">// initialised at −net_cost</span>
+</div>
+  </section>
+
+  <!-- 8. METRICS -->
+  <section class="doc-section" id="metrics">
+    <span class="kicker">§08</span>
+    <h2>IRR, payback, net gain.</h2>
+
+    <h3>Simple payback</h3>
+    <p>The first year where cumulative cashflow turns positive, with linear interpolation within the year for fractional precision.</p>
+
+    <h3>Discounted payback</h3>
+    <p>Same idea, but each year's savings discounted at 6% before accumulation. Always longer than simple payback. We compute it but don't headline it — most users find simple payback more intuitive.</p>
+
+    <h3>IRR</h3>
+    <p>The discount rate that makes the net present value of the 25-year cashflow stream equal zero. Solved by binary search over [−99%, 500%]:</p>
+    <div class="formula">find r such that:
+    Σ (cashflow[t] / (1 + r)^t) = 0
+    over t = 0..25
+    where cashflow[0] = −net_cost
+</div>
+    <p>IRR is the right comparison metric for solar because it accounts for time value of money. A 7-year payback at high IRR can beat a 5-year payback at low IRR if the late-year cashflows are larger (they are, due to tariff escalation).</p>
+
+    <h3>Net gain</h3>
+    <p>Total savings over 25 years minus the upfront net cost. This is the cleanest "what's in your pocket at year 25" figure — same units as the alt-investment comparisons.</p>
+    <div class="formula">net_gain = Σ savings[n] − net_cost</div>
+  </section>
+
+  <!-- 9. ALTS -->
+  <section class="doc-section" id="alts">
+    <span class="kicker">§09</span>
+    <h2>Comparisons against FD &amp; equity.</h2>
+    <p>"Should I go solar?" reduces to "vs what?" The honest comparison is: take the same outlay and put it in an alternative investment, then live in the same house and pay your bills out of pocket. The lowest-friction alternatives for an Indian household are fixed deposits and equity index funds.</p>
+
+    <h3>The mistake we used to make</h3>
+    <p>The first version of the chart compared raw <em>investment growth</em> against solar's <em>net gain</em>. That made alts look enormous: an FD line said ₹16 lakh, equity said ₹50 lakh, while solar showed ₹18 lakh. Apparent landslide for equity.</p>
+    <p>But the FD investor still pays bills for 25 years. The equity investor still pays bills for 25 years. Solar's "savings" are <em>those same bills, avoided</em>. So if we don't subtract bills paid from the alt rows, we're double-counting in solar's favour by every avoided bill — and the visual is dishonest in equity's favour by every bill they actually had to pay.</p>
+
+    <h3>What we do now</h3>
+    <p>Each alt row is rendered as <strong>net wealth at horizon</strong>: post-tax investment gain, minus cumulative bills paid (which escalate at the same tariff rate the solar savings escalate at). Solar's net gain is unchanged — it already nets all of this out.</p>
+    <div class="formula">bills_total = annual_bill × ((1+esc)^H − 1) / esc
+
+fd_wealth     = (fd_corpus_post − net_cost) − bills_total
+equity_wealth = (equity_corpus_post − net_cost) − bills_total
+solar_wealth  = net_gain   <span class="comment">// already net of outlay and avoided bills</span>
+</div>
+
+    <h3>Tax treatment</h3>
+    <table>
+      <thead><tr><th>Alternative</th><th>Tax basis</th><th>Effective net rate</th></tr></thead>
+      <tbody>
+        <tr><td>Fixed Deposit</td><td>20% slab tax on interest</td><td class="mono">~5.6% from 7% gross</td></tr>
+        <tr><td>Equity index fund</td><td>12.5% LTCG on gains</td><td class="mono">~10.7% from 12% gross</td></tr>
+      </tbody>
+    </table>
+    <p>The slab assumption (20%) is a typical middle-class income-tax bracket. For higher earners FD looks worse; for lower it looks slightly better. We don't ask for your tax bracket — defaults serve 80% of users.</p>
+
+    <h3>Why FD often goes negative</h3>
+    <p>A 7% FD post-tax (~5.6%) compounds slower than tariff escalation (~5%) plus household consumption inflation. Over 25 years, the FD investor's gain barely covers the bills they had to pay — often it's <em>less</em> than the bills, so net wealth is negative. The Card A row will show this honestly.</p>
+  </section>
+
+  <!-- 10. VERDICT -->
+  <section class="doc-section" id="verdict">
+    <span class="kicker">§10</span>
+    <h2>The verdict logic.</h2>
+    <p>The single sentence at the top of the page is computed, not authored. It compares solar's net wealth to passive equity's net wealth (the fairest financial benchmark — what a passive index investor would gain over the same 25 years):</p>
+    <table>
+      <thead><tr><th>Gap (solar − equity)</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">&gt; +₹2 lakh</td><td>Solar wins clearly</td></tr>
+        <tr><td class="mono">−₹1 lakh to +₹2 lakh</td><td>Comparable to equity (choose for inflation hedge + energy security)</td></tr>
+        <tr><td class="mono">&lt; −₹1 lakh, but solar &gt; 0</td><td>Equity wins on cash, but solar still gains and adds outage cover</td></tr>
+        <tr><td class="mono">solar &lt; 0</td><td>Wrong system at this outlay</td></tr>
+      </tbody>
+    </table>
+    <p>This logic deliberately doesn't depend on IRR alone. A 14% IRR can lose to a 12% equity alt when the outlay is large enough that absolute wealth gains diverge — typical for hybrid systems above 4 kW. IRR is shown as part of the verdict body but doesn't drive the headline.</p>
+    <div class="callout">
+      <span class="callout__label">Why this matters</span>
+      <p>The earlier verdict said "Solar wins clearly — 18% return beats your 12% alternative" while the chart's endpoints showed solar at ₹18 lakh and equity at ₹58 lakh. Both lines were technically computing different things; the user couldn't tell. Aligning verdict and chart on the same wealth metric is the single biggest honesty improvement in this version.</p>
+    </div>
+  </section>
+
+  <!-- 11. DEFAULTS -->
+  <section class="doc-section" id="defaults">
+    <span class="kicker">§11</span>
+    <h2>Defaults &amp; constants.</h2>
+    <p>Every default below can be overridden in advanced settings. They're listed here so you know exactly what the calculator is assuming on your behalf.</p>
+    <table>
+      <thead><tr><th>Constant</th><th>Default</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Cost per kW (gross)</td><td class="mono">₹65,000</td><td>India market mid-2026, before subsidy</td></tr>
+        <tr><td>Hybrid inverter premium</td><td class="mono">₹5,000/kW</td><td>over plain on-grid inverter</td></tr>
+        <tr><td>Off-grid inverter premium</td><td class="mono">₹15,000/kW</td><td>islanding capability + larger sizing</td></tr>
+        <tr><td>Battery cost</td><td class="mono">₹35,000/kWh</td><td>LFP, installed</td></tr>
+        <tr><td>Battery cost decline</td><td class="mono">4%/year</td><td>applied to replacement pricing</td></tr>
+        <tr><td>Battery calendar life</td><td class="mono">10 years</td><td>cap; cycling can shorten this</td></tr>
+        <tr><td>Battery cycle life</td><td class="mono">4,500 cycles</td><td>LFP nominal</td></tr>
+        <tr><td>Round-trip efficiency</td><td class="mono">92%</td><td>typical LFP + inverter losses</td></tr>
+        <tr><td>Depth of discharge</td><td class="mono">80%</td><td>preserves cycle life</td></tr>
+        <tr><td>Inverter standby draw</td><td class="mono">30 W</td><td>continuous; ~263 kWh/yr</td></tr>
+        <tr><td>Outage premium factor</td><td class="mono">2.0×</td><td>backup kWh worth 2× retail (no substitute)</td></tr>
+        <tr><td>Inverter conversion factor</td><td class="mono">0.97</td><td>DC→AC losses</td></tr>
+        <tr><td>Soiling factor</td><td class="mono">0.97</td><td>dust/bird droppings annual avg</td></tr>
+        <tr><td>Annual degradation</td><td class="mono">0.5%/year</td><td>floored at 85% of nominal</td></tr>
+        <tr><td>Tariff escalation</td><td class="mono">5%/year</td><td>historical India residential avg</td></tr>
+        <tr><td>Alt investment return</td><td class="mono">12%/year</td><td>equity benchmark, gross</td></tr>
+        <tr><td>FD rate</td><td class="mono">7%/year</td><td>gross, before slab tax</td></tr>
+        <tr><td>Slab tax (FD interest)</td><td class="mono">20%</td><td>typical middle-class bracket</td></tr>
+        <tr><td>LTCG on equity</td><td class="mono">12.5%</td><td>India 2026 rate, on gains above ₹1.25L</td></tr>
+        <tr><td>Analysis horizon</td><td class="mono">25 years</td><td>panel warranty period</td></tr>
+        <tr><td>APPC export rate</td><td class="mono">₹3.25/unit</td><td>2026 indicative wholesale rate</td></tr>
+        <tr><td>Off-grid utilization</td><td class="mono">85%</td><td>some kWh wasted when battery full + sun on</td></tr>
+        <tr><td>Diesel reference cost</td><td class="mono">₹25/kWh</td><td>diesel genset baseline for off-grid</td></tr>
+        <tr><td>Grid emission factor</td><td class="mono">0.82 kg CO₂/kWh</td><td>India grid mix, 2024 baseline</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- 12. CAVEATS -->
+  <section class="doc-section" id="caveats">
+    <span class="kicker">§12</span>
+    <h2>What we deliberately don't model.</h2>
+    <p>An honest tool says what it leaves out. None of the items below are oversights — each is a deliberate choice to prefer simplicity over precision when the precision wouldn't change the decision.</p>
+    <ul class="caveat-list">
+      <li><strong>Inverter replacement.</strong> String inverters often need replacement around year 12 (~₹5,500/kW in 2026 prices). Knocks IRR by ~1.5pp. Currently not deducted; will be added in v1.1.</li>
+      <li><strong>Loan financing.</strong> Many users finance solar through PM Surya Ghar's collateral-free ₹2 lakh loan at 6.75%. We assume cash purchase. With a loan, payback is faster by EMI logic but total cost is slightly higher.</li>
+      <li><strong>Slab tariff.</strong> Some DISCOMs charge higher rates above a consumption threshold (e.g., ₹6/unit below 200 units, ₹8/unit above). We use a single weighted average tariff per state. For users near a slab boundary this can under-state savings by 5–10%.</li>
+      <li><strong>AMC costs.</strong> Annual maintenance contracts run ₹500–1,500/year per kW after the warranty period. Currently not deducted.</li>
+      <li><strong>Tilt and azimuth optimisation.</strong> Optimal tilt for India is latitude-dependent. We assume optimal mounting on flat roofs and apply a 7% derate for sloped roofs (see §03).</li>
+      <li><strong>Time-of-day tariffs.</strong> A few DISCOMs are piloting time-of-use rates that would change battery economics. Not yet modeled.</li>
+      <li><strong>Resale value of the solar system.</strong> A 5-year-old system has economic value; we treat it as zero (conservative).</li>
+      <li><strong>Income tax deduction on solar (Section 80EEB-style).</strong> Not currently available for residential solar in India. If introduced, IRR would improve.</li>
+      <li><strong>Carbon credits.</strong> Residential solar in India isn't currently monetised through carbon markets. We show CO₂ offset as an environmental figure only.</li>
+    </ul>
+  </section>
+
+</article>
+
+<!-- ======== FOOTER ======== -->
+<footer class="colophon">
+  <div class="colophon__rule rule--double" aria-hidden="true"><span></span><span></span></div>
+  <div class="colophon__inner">
+    <p class="colophon__line">
+      <strong>Method:</strong> Documented above. Source code, formulas, and constants live in <span class="mono">engine.js</span>, <span class="mono">constants.js</span>, and the project's <span class="mono">LOGIC.md</span>.
+    </p>
+    <p class="colophon__line colophon__line--small">
+      Subsidy figures reflect PM Surya Ghar Muft Bijli Yojana as of 2026 — slabs and eligibility are subject to government revision. Tariff and net-metering rates by DISCOM are point-in-time and may change. This is a planning tool, not a guarantee. <a href="index.html">← Back to the Ledger</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
