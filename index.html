@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Solar Ledger — should you go solar?</title>
+  <meta name="description" content="A decision tool for Indian rooftops. Pays-back, IRR, sizing, and an honest comparison against fixed deposits and equity.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="diagrams.css">
+</head>
+<body>
+
+<!-- Subtle paper grain overlay -->
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ======== MASTHEAD ======== -->
+<header class="masthead">
+  <div class="masthead__rule rule--top" aria-hidden="true"></div>
+  <div class="masthead__inner">
+    <div class="brand">
+      <svg class="brand__mark" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="7" fill="currentColor"/>
+        <g stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="20" y1="2" x2="20" y2="9"/>
+          <line x1="20" y1="31" x2="20" y2="38"/>
+          <line x1="2" y1="20" x2="9" y2="20"/>
+          <line x1="31" y1="20" x2="38" y2="20"/>
+          <line x1="7" y1="7" x2="12" y2="12"/>
+          <line x1="28" y1="28" x2="33" y2="33"/>
+          <line x1="33" y1="7" x2="28" y2="12"/>
+          <line x1="12" y1="28" x2="7" y2="33"/>
+        </g>
+      </svg>
+      <div class="brand__text">
+        <h1 class="brand__name">The Solar Ledger</h1>
+        <p class="brand__tag">A decision tool for Indian rooftops</p>
+      </div>
+    </div>
+    <div class="masthead__meta">
+      <span class="dateline" id="dateline">EDITION №1</span>
+      <span class="vol">VOL. I · NO. 1 · ALL FIGURES IN ₹ INR</span>
+    </div>
+  </div>
+  <div class="masthead__rule rule--double" aria-hidden="true">
+    <span></span><span></span>
+  </div>
+</header>
+
+<!-- ======== INPUTS BAND ======== -->
+<section class="inputs" aria-label="Calculator inputs">
+  <div class="inputs__row">
+
+    <!-- Bills -->
+    <div class="input-group" data-group="bills">
+      <div class="input-group__head">
+        <span class="kicker">01 · Your bills</span>
+        <button class="mode-toggle" data-mode="precise" aria-label="Toggle bill input mode">
+          <span class="mode-toggle__opt is-active" data-opt="easy">Easy</span>
+          <span class="mode-toggle__opt" data-opt="precise">Precise</span>
+        </button>
+      </div>
+
+      <div class="input-mode" data-mode-pane="easy">
+        <label class="lifestyle-label">Pick your home</label>
+        <div class="lifestyle-grid" id="lifestyleGrid"></div>
+      </div>
+
+      <div class="input-mode is-hidden" data-mode-pane="precise">
+        <div class="dual-slider">
+          <div class="dual-slider__field">
+            <label for="billPeak">
+              <span>Peak summer bill</span>
+              <span class="value mono" id="billPeakLabel">₹3,500</span>
+            </label>
+            <input type="range" id="billPeak" min="500" max="15000" step="100" value="3500">
+          </div>
+          <div class="dual-slider__field">
+            <label for="billLow">
+              <span>Lowest winter bill</span>
+              <span class="value mono" id="billLowLabel">₹400</span>
+            </label>
+            <input type="range" id="billLow" min="200" max="2000" step="50" value="400">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Location -->
+    <div class="input-group" data-group="location">
+      <div class="input-group__head">
+        <span class="kicker">02 · State</span>
+      </div>
+      <select id="stateSelect" class="select" aria-label="Select your state"></select>
+      <p class="microcopy" id="discomMeta">Sets your tariff, sun zone, and net-metering rules.</p>
+    </div>
+
+    <!-- Roof -->
+    <div class="input-group" data-group="roof">
+      <div class="input-group__head">
+        <span class="kicker">03 · Roof</span>
+      </div>
+      <div class="roof-buttons" role="radiogroup" aria-label="Roof type">
+        <button class="roof-btn is-active" data-roof="FlatRCC" role="radio" aria-checked="true">
+          <svg viewBox="0 0 32 18" aria-hidden="true"><rect x="2" y="8" width="28" height="3"/><rect x="2" y="11" width="28" height="6" fill="none" stroke="currentColor"/></svg>
+          <span>Flat RCC</span>
+        </button>
+        <button class="roof-btn" data-roof="SlopedTiled" role="radio" aria-checked="false">
+          <svg viewBox="0 0 32 18" aria-hidden="true"><polygon points="2,15 16,3 30,15" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="2" y1="15" x2="30" y2="15" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span>Sloped</span>
+        </button>
+        <button class="roof-btn" data-roof="Terrace" role="radio" aria-checked="false">
+          <svg viewBox="0 0 32 18" aria-hidden="true"><rect x="2" y="10" width="28" height="2"/><rect x="2" y="12" width="28" height="4" fill="none" stroke="currentColor"/><line x1="2" y1="10" x2="2" y2="6" stroke="currentColor"/><line x1="30" y1="10" x2="30" y2="6" stroke="currentColor"/></svg>
+          <span>Terrace</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="input-group" data-group="grid">
+      <div class="input-group__head">
+        <span class="kicker">04 · Grid reliability</span>
+        <span class="value mono" id="gridLabel">Reliable</span>
+      </div>
+      <div class="grid-track">
+        <input type="range" id="gridSlider" min="0" max="4" step="1" value="0" class="grid-slider">
+        <div class="grid-stops" id="gridStops"></div>
+      </div>
+      <p class="microcopy" id="gridScenario">Urban metro, very rare outages.</p>
+    </div>
+  </div>
+
+  <!-- System type segment -->
+  <div class="system-toggle" role="radiogroup" aria-label="System type">
+    <span class="system-toggle__label">05 · System type</span>
+    <div class="system-toggle__group">
+      <button class="sys-btn is-active" data-sys="OnGrid" role="radio" aria-checked="true">
+        <svg class="sys-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="6" cy="7" r="2.4" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <g stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+            <line x1="6" y1="2.5" x2="6" y2="3.8"/><line x1="6" y1="10.2" x2="6" y2="11.5"/>
+            <line x1="2" y1="7" x2="3" y2="7"/><line x1="9" y1="7" x2="10" y2="7"/>
+          </g>
+          <polygon points="13,17 21,17 19.6,12.5 11.6,12.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="14" y1="21" x2="20" y2="21" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="17" y1="17" x2="17" y2="21" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        <span class="sys-btn__label">On-grid</span>
+        <span class="sys-btn__sub">recommended</span>
+      </button>
+      <button class="sys-btn" data-sys="Hybrid" role="radio" aria-checked="false">
+        <svg class="sys-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <polygon points="3,12 11,12 9.6,7.5 1.6,7.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="14" y="9" width="7" height="9" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="15.5" y1="9" x2="15.5" y2="7.5" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="19.5" y1="9" x2="19.5" y2="7.5" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="11" y1="13.5" x2="14" y2="13.5" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        <span class="sys-btn__label">Hybrid</span>
+        <span class="sys-btn__sub">backup</span>
+      </button>
+      <button class="sys-btn" data-sys="OffGrid" role="radio" aria-checked="false">
+        <svg class="sys-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="5" y="6.5" width="14" height="11.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="7.5" y="4" width="3" height="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="13.5" y="4" width="3" height="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="9" y1="10" x2="9" y2="14.5" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="12" y1="10" x2="12" y2="14.5" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="15" y1="10" x2="15" y2="14.5" stroke="currentColor" stroke-width="1.4"/>
+        </svg>
+        <span class="sys-btn__label">Off-grid</span>
+        <span class="sys-btn__sub">enablement</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Advisory: appears when user picks a non-recommended type given grid reliability -->
+  <p class="sys-advisory" id="sysAdvisory" hidden></p>
+
+  <!-- System diagram (mounted by diagrams.js) -->
+  <div id="systemDiagram" aria-live="polite"></div>
+
+</section>
+
+<!-- ======== SIZING & PRICE ======== -->
+<section class="sizing" aria-label="Size and price">
+  <div class="sizing__head">
+    <span class="kicker">06 · How big &amp; what it costs</span>
+    <h3 class="sizing__title">Slide to size your system — price, payback, and savings update live.</h3>
+  </div>
+  <div class="sizing__grid">
+    <div class="sizing__choices">
+      <div class="kw-control">
+        <div class="kw-control__top">
+          <span class="kw-control__heading">Recommended for your bill</span>
+          <div class="size-cards" id="sizeCards" aria-label="Quick sizing presets"></div>
+        </div>
+
+        <div class="kw-pick">
+          <span class="kw-pick__label">You picked</span>
+          <span class="kw-pick__value mono" id="kwSliderReadout">3 kW</span>
+        </div>
+
+        <div class="kw-slider">
+          <div class="kw-slider__track">
+            <span class="kw-slider__reco" id="kwSliderReco" aria-hidden="true">
+              <span class="kw-slider__reco-label">RECOMMENDED</span>
+              <span class="kw-slider__reco-tick"></span>
+            </span>
+            <input type="range" id="kwSlider" min="1" max="10" step="0.5" value="3" class="kw-slider__input">
+          </div>
+          <div class="kw-slider__scale">
+            <span>1 kW</span>
+            <span class="kw-slider__scale-mid">5 kW</span>
+            <span>10 kW</span>
+          </div>
+          <p class="kw-slider__live" id="kwLiveLine">
+            At <strong id="kwLivePick">3 kW</strong> · pays back in
+            <strong id="kwLivePayback">—</strong> · saves
+            <strong id="kwLiveSave">—</strong>/mo · cuts
+            <strong id="kwLiveCut">—</strong> of your bill
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="sizing__price" id="sizingPrice"></div>
+  </div>
+</section>
+
+<!-- ======== HEADLINE + DECISION ======== -->
+<section class="headline" id="headlineSection" aria-label="Your decision">
+  <div class="headline__lead">
+    <p class="kicker headline__kicker">07 · Your decision · computed live</p>
+    <h2 class="headline__sentence" id="headlineSentence">
+      A <span class="amber" id="hKw">3</span> kW system pays back in
+      <span class="amber" id="hPayback">4.0</span> years and saves
+      <span class="amber" id="hGain">₹10.9 lakh</span>
+      over <span id="hHorizon">25</span> years —
+      after a <span id="hSubsidy">₹78,000</span> government subsidy.
+    </h2>
+
+    <div class="headline__rationale">
+      <span class="rationale-label">Why we believe this · four numbers traced back to assumptions</span>
+      <div class="rationale__grid" id="rationaleGrid"></div>
+    </div>
+  </div>
+
+  <aside class="headline__compare" aria-label="Versus the alternatives">
+    <span class="compare__title">The comparison base</span>
+    <dl class="compare__ref">
+      <div><dt>System cost (one-time)</dt><dd class="mono" id="refOutlay">—</dd></div>
+      <div><dt>Year-1 bill if you do nothing</dt><dd class="mono" id="refBill">—</dd></div>
+    </dl>
+
+    <span class="compare__title compare__title--sub">Versus alternatives · 25-yr net wealth</span>
+    <p class="compare__note">Investment gain post-tax, less bills you'd still pay. Apples-to-apples with solar.</p>
+    <dl class="data-pairs">
+      <div>
+        <dt>IRR over 25 years</dt>
+        <dd class="mono" id="cardAIrr">—</dd>
+      </div>
+      <div>
+        <dt>FD (7%, post-slab) − bills paid</dt>
+        <dd class="mono"><span id="cardAFd">—</span><span class="mult" id="cardAFdMult"></span></dd>
+      </div>
+      <div>
+        <dt>Equity (12%, post-LTCG) − bills paid</dt>
+        <dd class="mono"><span id="cardANifty">—</span><span class="mult" id="cardANiftyMult"></span></dd>
+      </div>
+      <div>
+        <dt>Solar net wealth over 25 yrs</dt>
+        <dd class="mono num--accent"><span id="cardASolar">—</span><span class="mult" id="cardASolarMult"></span></dd>
+      </div>
+    </dl>
+    <div class="headline__verdict" id="headlineVerdict"></div>
+  </aside>
+
+  <div class="headline__charts">
+    <figure class="chart-fig headline__chart">
+      <figcaption class="chart-cap">
+        <span class="kicker">Fig. 1</span>
+        <h4>Monthly bill vs solar savings · Year 1</h4>
+        <p>Your peak May–June bills are what makes solar pay. Monsoon dips show in July–August.</p>
+      </figcaption>
+      <div class="chart-host" id="monthlyChart"></div>
+      <div class="chart-legend">
+        <span><i class="legend-mark legend-mark--bill"></i> Your bill</span>
+        <span><i class="legend-mark legend-mark--save"></i> Solar savings</span>
+      </div>
+    </figure>
+
+    <figure class="chart-fig headline__chart">
+      <figcaption class="chart-cap">
+        <span class="kicker">Fig. 2</span>
+        <h4>25-year cumulative position</h4>
+        <p>Cash position vs investing the same money at <span id="altLabel">12%</span>.</p>
+      </figcaption>
+      <div class="chart-host" id="cumulativeChart"></div>
+      <div class="chart-legend">
+        <span><i class="legend-mark legend-mark--solar"></i> Solar (cumulative net)</span>
+        <span><i class="legend-mark legend-mark--alt"></i> Alternative investment</span>
+      </div>
+    </figure>
+  </div>
+</section>
+
+<!-- ======== ADVANCED ======== -->
+<details class="advanced">
+  <summary class="advanced__summary">
+    <span class="kicker">Advanced settings</span>
+    <span class="advanced__chev" aria-hidden="true">→</span>
+  </summary>
+
+  <div class="advanced__body">
+
+    <div class="adv-group">
+      <h4 class="adv-group__title">System spec</h4>
+      <div class="adv-grid">
+        <label class="adv-field">
+          <span>Panel technology</span>
+          <select id="panelTech" class="select select--sm">
+            <option value="TOPCon">TOPCon (newer, recommended)</option>
+            <option value="MonoPERC">Mono PERC</option>
+          </select>
+        </label>
+        <label class="adv-field">
+          <span>Shading</span>
+          <select id="shading" class="select select--sm">
+            <option value="None">None</option>
+            <option value="Partial">Partial</option>
+            <option value="Heavy">Heavy</option>
+          </select>
+        </label>
+        <label class="adv-field">
+          <span>System size override (kW)</span>
+          <input type="number" id="systemKw" class="input--sm" min="1" max="10" step="0.5" value="3">
+        </label>
+      </div>
+    </div>
+
+    <div class="adv-group">
+      <h4 class="adv-group__title">Financial assumptions</h4>
+      <div class="adv-grid">
+        <label class="adv-field">
+          <span>Cost per kW (₹, gross)</span>
+          <input type="number" id="costPerKw" class="input--sm" min="40000" max="90000" step="1000" value="65000">
+        </label>
+        <label class="adv-field">
+          <span>Tariff escalation (%/yr)</span>
+          <input type="number" id="escalation" class="input--sm" min="0" max="15" step="0.5" value="5">
+        </label>
+        <label class="adv-field">
+          <span>Alternative return (%/yr)</span>
+          <input type="number" id="altReturn" class="input--sm" min="3" max="20" step="0.5" value="12">
+        </label>
+        <label class="adv-field">
+          <span>Analysis horizon (yrs)</span>
+          <select id="horizon" class="select select--sm">
+            <option value="10">10 years</option>
+            <option value="15">15 years</option>
+            <option value="25" selected>25 years</option>
+          </select>
+        </label>
+        <label class="adv-field adv-field--check">
+          <input type="checkbox" id="netMetering" checked>
+          <span>Net metering enabled</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="adv-group" id="hybridGroup" hidden>
+      <h4 class="adv-group__title">Hybrid backup parameters</h4>
+      <div class="adv-grid">
+        <label class="adv-field">
+          <span>Critical load (kW)</span>
+          <input type="number" id="criticalLoad" class="input--sm" min="0.1" max="3" step="0.1" value="0.5">
+        </label>
+        <label class="adv-field">
+          <span>Outage timing</span>
+          <select id="outageTiming" class="select select--sm">
+            <option value="Evening">Evening peak (6-9pm)</option>
+            <option value="Daytime">Daytime (10am-4pm)</option>
+            <option value="Night">Night (10pm-6am)</option>
+            <option value="Mixed">Mixed / random</option>
+          </select>
+        </label>
+        <label class="adv-field">
+          <span>Battery sizing factor (kWh / kW solar)</span>
+          <input type="number" id="batteryFactor" class="input--sm" min="0.5" max="3" step="0.1" value="1">
+        </label>
+      </div>
+    </div>
+
+    <div class="adv-group">
+      <div class="adv-group__head">
+        <h4 class="adv-group__title">Year-by-year cashflow</h4>
+        <button type="button" class="export-btn" id="exportCashflow">Download CSV ↓</button>
+      </div>
+      <div class="year-table" id="yearTable"></div>
+    </div>
+
+  </div>
+</details>
+
+<!-- ======== FOOTER ======== -->
+<footer class="colophon">
+  <div class="colophon__rule rule--double" aria-hidden="true"><span></span><span></span></div>
+  <div class="colophon__inner">
+    <p class="colophon__line">
+      <strong>Method:</strong> 12-month bill shape curve · monthly generation with temperature, shading and inverter losses · 25-year cashflow with annual degradation and tariff escalation · IRR by binary search.
+    </p>
+    <p class="colophon__line colophon__line--small">
+      Subsidy figures reflect PM Surya Ghar Muft Bijli Yojana as of 2026 — slabs and eligibility are subject to government revision. Tariff and net-metering rates by DISCOM are point-in-time and may change. This is a planning tool, not a guarantee.
+    </p>
+  </div>
+</footer>
+
+<script type="module" src="app.js?v=4"></script>
+</body>
+</html>

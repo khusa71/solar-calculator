@@ -1,0 +1,726 @@
+/* ============================================================
+   THE SOLAR LEDGER — system-diagram stylesheet
+   Editorial line-art schematics for On-grid / Hybrid / Off-grid.
+   Companion to styles.css.
+   ============================================================ */
+
+/* ---- Container ---- */
+.sys-diagram {
+  margin-top: 1rem;
+  padding: 1.5rem 1.5rem 1.25rem;
+  border: 1px solid var(--rule-soft);
+  border-top: 2px solid var(--rule);
+  background: var(--paper);
+  position: relative;
+}
+
+.sys-diagram__rune {
+  position: absolute;
+  top: -0.6rem; left: 1.25rem;
+  background: var(--paper);
+  padding: 0 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+
+/* ---- Pane (one per system type) ---- */
+.sys-diagram__pane { display: none; }
+.sys-diagram__pane.is-active {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 1.5rem 2rem;
+  align-items: center;
+  animation: paneIn 0.4s var(--ease) both;
+}
+@keyframes paneIn {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 820px) {
+  .sys-diagram__pane.is-active {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+/* ---- The schematic SVG ---- */
+.sys-diagram__svg {
+  width: 100%;
+  height: auto;
+  max-height: 320px;
+  display: block;
+}
+
+/* Title strip atop each schematic */
+.sys-diagram__svg .diag-title {
+  font-family: var(--mono);
+  font-size: 7.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  fill: var(--ink-mute);
+  font-weight: 500;
+}
+
+/* Callout — leader line + dot + label off to the side of each component */
+.sys-diagram__svg .callout__dot {
+  fill: var(--ink);
+  stroke: none;
+}
+.sys-diagram__svg .callout__lead {
+  stroke: var(--ink-mute);
+  stroke-width: 0.7;
+  stroke-linecap: round;
+  fill: none;
+  stroke-dasharray: 1.5 2;
+}
+.sys-diagram__svg .callout__lbl {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  fill: var(--ink);
+  font-weight: 500;
+}
+
+.sys-diagram__svg .ink {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.sys-diagram__svg .ink--soft {
+  stroke: var(--ink-soft);
+  stroke-width: 1.2;
+}
+
+/* Sun pulses gently */
+.sys-diagram__svg .sun-rays line {
+  stroke: var(--amber);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  animation: sunPulse 3.6s ease-in-out infinite;
+}
+.sys-diagram__svg .sun-disc {
+  fill: var(--amber-wash);
+  stroke: var(--amber);
+  stroke-width: 1.4;
+}
+@keyframes sunPulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+
+/* Component labels under each shape */
+.sys-diagram__svg .label {
+  font-family: var(--mono);
+  font-size: 8.5px;
+  letter-spacing: 0.2em;
+  fill: var(--ink-mute);
+  text-transform: uppercase;
+}
+
+/* Energy flow paths — marching amber dashes */
+.sys-diagram__svg .flow {
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 3 6;
+}
+.sys-diagram__svg .flow--energy {
+  stroke: var(--amber);
+  animation: flowMarch 2s linear infinite;
+}
+.sys-diagram__svg .flow--export {
+  stroke: var(--sage);
+  animation: flowMarch 2.4s linear infinite;
+}
+.sys-diagram__svg .flow--import {
+  stroke: var(--crimson);
+  animation: flowMarchRev 2.4s linear infinite;
+  opacity: 0.85;
+}
+.sys-diagram__svg .flow--store {
+  stroke: var(--amber-deep);
+  animation: flowMarch 2.6s linear infinite;
+  opacity: 0.85;
+}
+@keyframes flowMarch    { to { stroke-dashoffset: -18; } }
+@keyframes flowMarchRev { to { stroke-dashoffset:  18; } }
+
+/* Energy packets — bright dots travelling along each flow path.
+   Travel is driven by SMIL <animateMotion> in the SVG; CSS just paints. */
+.sys-diagram__svg .packet {
+  pointer-events: none;
+  stroke: var(--paper);
+  stroke-width: 0.5;
+}
+.sys-diagram__svg .packet--energy { fill: var(--amber); }
+.sys-diagram__svg .packet--export { fill: var(--sage); }
+.sys-diagram__svg .packet--import { fill: var(--crimson); }
+.sys-diagram__svg .packet--store  { fill: var(--amber-deep); }
+
+/* Inline flow annotations */
+.sys-diagram__svg .annot {
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.sys-diagram__svg .annot--export { fill: var(--sage); }
+.sys-diagram__svg .annot--import { fill: var(--crimson); }
+.sys-diagram__svg .annot--store  { fill: var(--amber-deep); }
+.sys-diagram__svg .annot--note   { fill: var(--ink-mute); font-size: 7.5px; }
+
+/* Strikethrough mark (off-grid: no grid) */
+.sys-diagram__svg .strike {
+  stroke: var(--crimson);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+
+/* ============================================================
+   Bill explanation strip
+   ============================================================ */
+.sys-bill {
+  border-left: 2px solid var(--ink);
+  padding: 0.25rem 0 0.25rem 1.1rem;
+}
+
+.sys-bill__title {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-bottom: 0.4rem;
+  display: block;
+}
+
+.sys-bill__formula {
+  font-family: var(--serif);
+  font-variation-settings: 'opsz' 24, 'SOFT' 40, 'wght' 400;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: var(--ink);
+  line-height: 1.35;
+  margin-bottom: 0.7rem;
+}
+.sys-bill__formula .amber  { color: var(--amber-deep); font-style: normal; }
+.sys-bill__formula .green  { color: var(--sage); font-style: normal; }
+.sys-bill__formula .red    { color: var(--crimson); font-style: normal; }
+
+.sys-bill__steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+.sys-bill__steps li {
+  font-size: 0.83rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  padding-left: 1.1rem;
+  position: relative;
+}
+.sys-bill__steps li::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0.55em;
+  width: 0.55rem; height: 1px;
+  background: var(--ink-soft);
+}
+.sys-bill__steps li strong {
+  font-weight: 500;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-right: 0.35rem;
+}
+
+/* Worked-example calculation block — explicit arithmetic layout */
+.sys-bill__calc {
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem 0.75rem;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+}
+.calc-row {
+  display: grid;
+  grid-template-columns: 1.4em 1fr auto;
+  align-items: baseline;
+  column-gap: 0.6rem;
+  padding: 0.22rem 0;
+}
+.calc-row__op {
+  font-family: var(--serif);
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--ink-mute);
+  text-align: center;
+  line-height: 1;
+}
+.calc-row__label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.calc-row__sub {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--ink-mute);
+}
+.calc-row__val {
+  font-family: var(--mono);
+  font-feature-settings: 'tnum';
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.calc-row__val--minus  { color: var(--crimson); }
+.calc-row__val--accent { color: var(--amber-deep); font-size: 1.15rem; }
+.calc-row__val--save   { color: var(--sage); font-size: 1.25rem; }
+.calc-row__unit {
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  margin-left: 0.15rem;
+  font-weight: 400;
+}
+
+.calc-row--minus { padding-bottom: 0.5rem; }
+.calc-row--total {
+  margin-top: 0.15rem;
+  padding-top: 0.5rem;
+  border-top: 1.5px solid var(--ink);
+}
+.calc-row--total .calc-row__op,
+.calc-row--total .calc-row__label {
+  color: var(--ink);
+}
+.calc-row--save {
+  padding-top: 0.45rem;
+  margin-top: 0.1rem;
+  border-top: 1px dashed var(--rule-soft);
+}
+
+/* ============================================================
+   Sizing & price section — standalone band between inputs & headline
+   ============================================================ */
+.sizing {
+  padding: 2.5rem var(--gutter) 2.75rem;
+  background: var(--paper-deep);
+  border-bottom: var(--bold) solid var(--rule);
+}
+.sizing__head { margin-bottom: 1.5rem; max-width: 60ch; }
+.sizing__head .kicker { display: block; margin-bottom: 0.55rem; }
+.sizing__title {
+  font-family: var(--serif);
+  font-variation-settings: 'opsz' 60, 'SOFT' 60, 'wght' 380;
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  font-style: italic;
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+}
+.sizing__grid {
+  display: grid;
+  grid-template-columns: 1.45fr 1fr;
+  gap: 2.25rem;
+  align-items: stretch;
+}
+@media (max-width: 820px) {
+  .sizing__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+}
+
+/* Wrapper inside the grid cell — fills the cell so the kw-control matches the
+   right-hand price card height. */
+.sizing__choices {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Capacity control (left side of the section) — recommendation + slider */
+.kw-control {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1.1rem 1.25rem;
+  background: var(--paper);
+  border: 1px solid var(--rule-soft);
+  border-radius: 2px;
+}
+/* Push the live readout line to the bottom so the card doesn't have a hollow
+   tail when stretched to match the price card. */
+.kw-control .kw-slider__live { margin-top: auto; }
+
+.kw-control__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.kw-control__heading {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  flex-shrink: 0;
+}
+.kw-control__top .size-cards {
+  margin: 0;
+  flex: 0 1 auto;
+  grid-template-columns: repeat(3, minmax(96px, 1fr));
+  gap: 4px;
+}
+
+/* Compact pill version of the size cards inside kw-control — kW + label only */
+.kw-control .size-card {
+  padding: 0.5rem 0.7rem;
+}
+.kw-control .size-card__kw {
+  font-size: 1.1rem;
+}
+.kw-control .size-card__label {
+  font-size: 0.55rem;
+  margin-top: 2px;
+  letter-spacing: 0.14em;
+}
+
+/* Active state — the user's currently-selected size. Wins over is-recommended. */
+.size-card.is-active,
+.size-card.is-active.is-recommended {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.size-card.is-active .size-card__kw,
+.size-card.is-active.is-recommended .size-card__kw { color: var(--amber); }
+.size-card.is-active .size-card__label { color: var(--paper); opacity: 0.75; }
+.size-card.is-active .size-card__meta  { color: var(--paper); opacity: 0.65; }
+
+/* "You picked" row */
+.kw-pick {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.6rem;
+}
+.kw-pick__label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.kw-pick__value {
+  font-size: 2rem;
+  font-weight: 500;
+  color: var(--amber);
+  letter-spacing: -0.01em;
+}
+
+/* Slider */
+.kw-slider__track {
+  position: relative;
+  margin: 1.6rem 0 0.3rem;
+}
+.kw-slider__reco {
+  position: absolute;
+  top: -1.55rem;
+  left: 22%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transition: left 0.18s var(--ease);
+}
+.kw-slider__reco-label {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  color: var(--amber-deep);
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+.kw-slider__reco-tick {
+  width: 2px;
+  height: 12px;
+  background: var(--amber-deep);
+}
+.kw-slider__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--rule-soft);
+  border-radius: 2px;
+  outline: none;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+.kw-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  transition: transform 0.12s var(--ease);
+}
+.kw-slider__input::-webkit-slider-thumb:hover { transform: scale(1.12); }
+.kw-slider__input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--amber);
+  border: 2px solid var(--ink);
+  cursor: pointer;
+}
+.kw-slider__scale {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.06em;
+}
+.kw-slider__scale-mid { color: var(--ink-soft); }
+
+.kw-slider__live {
+  margin-top: 1rem;
+  padding-top: 0.7rem;
+  border-top: 1px dashed var(--rule-soft);
+  font-family: var(--serif);
+  font-style: italic;
+  font-variation-settings: 'opsz' 18, 'SOFT' 30, 'wght' 400;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+.kw-slider__live strong {
+  font-style: normal;
+  font-family: var(--mono);
+  font-feature-settings: 'tnum';
+  font-weight: 500;
+  color: var(--amber-deep);
+  font-size: 1rem;
+}
+
+/* Price-breakdown panel (right side of the section) */
+.sizing__price {
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: var(--paper);
+  border: 1px solid var(--rule-soft);
+  border-left: 2px solid var(--ink);
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+}
+/* Push the payback (and any footnote) to the bottom of the stretched card */
+.sizing__price .sizing-price__payback { margin-top: auto; }
+.sizing-price__title {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: block;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.sizing-price__breakdown {
+  display: grid;
+  gap: 0.3rem;
+  margin-bottom: 0.85rem;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--mono);
+  font-feature-settings: 'tnum';
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+.price-row__label {
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+.price-row__val {
+  color: var(--ink);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.price-row--sub .price-row__label,
+.price-row--sub .price-row__val {
+  color: var(--ink-mute);
+  font-size: 0.75rem;
+}
+.price-row--minus .price-row__val { color: var(--sage); }
+.price-row--total {
+  margin-top: 0.4rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid var(--ink);
+  font-size: 1.05rem;
+}
+.price-row--total .price-row__label {
+  color: var(--ink);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+}
+.price-row--total .price-row__val {
+  color: var(--amber-deep);
+  font-weight: 500;
+  font-size: 1.15rem;
+}
+
+/* Year-1 savings block — sits between the breakdown and the payback */
+.sizing-price__savings {
+  margin: 1rem 0 0.5rem;
+  padding: 0.7rem 0.85rem;
+  background: var(--paper-deep);
+  border-radius: 2px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+}
+.sizing-price__savings-label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.sizing-price__savings-val {
+  font-family: var(--mono);
+  font-feature-settings: 'tnum';
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--sage);
+  text-align: right;
+}
+.sizing-price__savings-unit {
+  font-size: 0.7rem;
+  color: var(--ink-mute);
+  margin-left: 0.15rem;
+  font-weight: 400;
+}
+.sizing-price__savings-pct {
+  grid-column: 1 / -1;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-top: 0.15rem;
+}
+
+.sizing-price__payback {
+  margin-top: 0.5rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--rule-soft);
+  font-family: var(--serif);
+  font-style: italic;
+  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'wght' 400;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.sizing-price__payback strong {
+  color: var(--amber-deep);
+  font-weight: 500;
+  font-style: normal;
+}
+.sizing-price__footnote {
+  margin-top: 0.7rem;
+  font-size: 0.74rem;
+  color: var(--ink-mute);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Trade-off footnote */
+.sys-bill__tradeoff {
+  margin-top: 0.85rem;
+  padding-top: 0.65rem;
+  border-top: 1px dashed var(--rule-soft);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  letter-spacing: 0.04em;
+  line-height: 1.45;
+}
+.sys-bill__tradeoff b {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Schematic gist (sub-caption under the SVG) */
+.sys-diagram__gist {
+  margin-top: 0.4rem;
+  font-family: var(--serif);
+  font-style: italic;
+  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'wght' 400;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .sys-diagram__svg .flow,
+  .sys-diagram__svg .sun-rays line,
+  .sys-diagram__pane.is-active { animation: none !important; }
+  .sys-diagram__svg .packet { display: none; }
+}
+
+/* ============================================================
+   System-button icons (refined, replaces emoji glyphs)
+   ============================================================ */
+.sys-btn__icon {
+  width: 24px; height: 24px;
+  color: var(--ink);
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+.sys-btn.is-active .sys-btn__icon { color: var(--amber); }
