@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://solar-calculator-flax-two.vercel.app/sitemap.xml

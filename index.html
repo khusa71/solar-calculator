@@ -1,16 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Solar Ledger — should you go solar?</title>
-  <meta name="description" content="A decision tool for Indian rooftops. Pays-back, IRR, sizing, and an honest comparison against fixed deposits and equity.">
+  <title>Solar Calculator for Indian Rooftops — Payback, IRR & Subsidy</title>
+  <meta name="description" content="Free rooftop solar calculator for Indian homes. Estimates system size in kW, PM Surya Ghar subsidy, payback years, IRR, and net-metering value — compared honestly against fixed deposits and equity.">
+  <link rel="canonical" href="https://solar-calculator-flax-two.vercel.app/">
+  <meta name="theme-color" content="#F6F0E2">
+  <meta name="author" content="The Solar Ledger">
+
+  <!-- Open Graph / link preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="The Solar Ledger">
+  <meta property="og:title" content="Solar Calculator for Indian Rooftops — Payback, IRR & Subsidy">
+  <meta property="og:description" content="A decision tool for Indian rooftops. Sizing, payback, IRR, and an honest comparison against fixed deposits and equity.">
+  <meta property="og:url" content="https://solar-calculator-flax-two.vercel.app/">
+  <meta property="og:locale" content="en_IN">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Solar Calculator for Indian Rooftops — Payback, IRR & Subsidy">
+  <meta name="twitter:description" content="A decision tool for Indian rooftops. Sizing, payback, IRR, and an honest comparison against fixed deposits and equity.">
+
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..900,0..100&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="diagrams.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "The Solar Ledger",
+    "alternateName": "Solar Calculator for Indian Rooftops",
+    "description": "Rooftop solar calculator for Indian homes. Estimates system size, PM Surya Ghar subsidy, payback, IRR, and compares against fixed deposits and equity.",
+    "url": "https://solar-calculator-flax-two.vercel.app/",
+    "applicationCategory": "FinanceApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript",
+    "inLanguage": "en-IN",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "INR"
+    },
+    "audience": {
+      "@type": "Audience",
+      "geographicArea": {
+        "@type": "Country",
+        "name": "India"
+      }
+    }
+  }
+  </script>
 </head>
 <body>
 
@@ -50,6 +93,8 @@
   </div>
 </header>
 
+<main>
+
 <!-- ======== INPUTS BAND ======== -->
 <section class="inputs" aria-label="Calculator inputs">
   <div class="inputs__row">
@@ -58,15 +103,16 @@
     <div class="input-group" data-group="bills">
       <div class="input-group__head">
         <span class="kicker">01 · Your bills</span>
-        <button class="mode-toggle" data-mode="precise" aria-label="Toggle bill input mode">
-          <span class="mode-toggle__opt is-active" data-opt="easy">Easy</span>
-          <span class="mode-toggle__opt" data-opt="precise">Precise</span>
+        <button class="mode-toggle" type="button" role="switch" aria-checked="false" aria-label="Precise bill input mode">
+          <span class="mode-toggle__opt is-active" data-opt="easy" aria-hidden="true">Easy</span>
+          <span class="mode-toggle__opt" data-opt="precise" aria-hidden="true">Precise</span>
         </button>
       </div>
 
       <div class="input-mode" data-mode-pane="easy">
         <label class="lifestyle-label">Pick your home</label>
         <div class="lifestyle-grid" id="lifestyleGrid"></div>
+        <p class="microcopy lifestyle-hint">If none of these match your bill, switch to <em>Precise</em> and dial in the exact peak/winter rupee figures.</p>
       </div>
 
       <div class="input-mode is-hidden" data-mode-pane="precise">
@@ -126,16 +172,145 @@
         <span class="value mono" id="gridLabel">Reliable</span>
       </div>
       <div class="grid-track">
-        <input type="range" id="gridSlider" min="0" max="4" step="1" value="0" class="grid-slider">
+        <input type="range" id="gridSlider" min="0" max="4" step="1" value="0" class="grid-slider" aria-label="Grid reliability — outage hours per day">
         <div class="grid-stops" id="gridStops"></div>
       </div>
       <p class="microcopy" id="gridScenario">Urban metro, very rare outages.</p>
     </div>
   </div>
 
+</section>
+
+<!-- ======== §2 · BILLING PATTERN ======== -->
+<section class="billing-pattern" aria-label="Your billing pattern">
+  <div class="billing-pattern__head">
+    <span class="kicker">Your bill, decoded</span>
+    <h2 class="billing-pattern__title" id="billPatternTitle">
+      Your electricity bill, decoded month-by-month — peaks, dips, and what they mean for solar.
+    </h2>
+  </div>
+  <figure class="chart-fig billing-pattern__chart">
+    <figcaption class="chart-cap">
+      <span class="kicker">Fig. 0</span>
+      <h3>Inferred monthly bill — Jan to Dec</h3>
+      <p id="billPatternCaption">The peak summer months are exactly when solar generates the most. That's the alignment that makes rooftop solar pay.</p>
+    </figcaption>
+    <!-- 2-col row so bill-numbers vertically matches chart-host only. -->
+    <div class="chart-row">
+      <div class="chart-host" id="billPatternChart"></div>
+      <aside class="bill-numbers" aria-label="Annual bill breakdown">
+        <span class="kicker">The math</span>
+        <dl class="bill-numbers__rows">
+          <div>
+            <dt>Annual bill (sum of 12 months)</dt>
+            <dd class="mono num--accent" id="billAnnualTotal">—</dd>
+          </div>
+          <div>
+            <dt>Annual consumption</dt>
+            <dd class="mono"><span id="billAnnualUnits">—</span> kWh</dd>
+          </div>
+          <div>
+            <dt>Top-slab tariff (where solar saves)</dt>
+            <dd class="mono" id="billTopSlab">—</dd>
+          </div>
+          <div>
+            <dt>Peak month / Low month</dt>
+            <dd class="mono"><span id="billPeakMo">—</span> · <span id="billLowMo">—</span></dd>
+          </div>
+        </dl>
+        <p class="microcopy">Bill shape uses a typical Indian seasonal curve anchored to your peak/low. Consumption back-solved from the tariff slab schedule for your DISCOM.</p>
+      </aside>
+    </div>
+  </figure>
+</section>
+
+<!-- ======== §3 · SIZING & PRICE ======== -->
+<section class="sizing" aria-label="Size and price">
+  <div class="sizing__head">
+    <span class="kicker">Our recommendation</span>
+    <h2 class="sizing__title">
+      We recommend a <strong class="amber" id="recoKw">— kW</strong>
+      <strong id="recoType">on-grid</strong> system —
+      <span id="recoOneLiner">pays back in — years and cuts —% of your bill.</span>
+    </h2>
+    <p class="microcopy" id="recoReason">Sized to maximize IRR for your bill — covers most of what you use, exports little.</p>
+  </div>
+  <div class="sizing__grid">
+    <div class="sizing__choices">
+      <div class="kw-control">
+        <div class="kw-control__top">
+          <span class="kw-control__heading">Recommended for your bill</span>
+          <div class="size-cards" id="sizeCards" aria-label="Quick sizing presets"></div>
+        </div>
+
+        <div class="kw-pick">
+          <span class="kw-pick__label">You picked</span>
+          <span class="kw-pick__value mono" id="kwSliderReadout">3 kW</span>
+        </div>
+
+        <div class="kw-slider">
+          <div class="kw-slider__track">
+            <span class="kw-slider__reco" id="kwSliderReco" aria-hidden="true">
+              <span class="kw-slider__reco-label">RECOMMENDED</span>
+              <span class="kw-slider__reco-tick"></span>
+            </span>
+            <input type="range" id="kwSlider" min="1" max="10" step="0.5" value="3" class="kw-slider__input" aria-label="System size in kilowatts">
+          </div>
+          <div class="kw-slider__scale">
+            <span>1 kW</span>
+            <span class="kw-slider__scale-mid">5 kW</span>
+            <span>10 kW</span>
+          </div>
+          <p class="kw-slider__live" id="kwLiveLine">
+            At <strong id="kwLivePick">3 kW</strong> · pays back in
+            <strong id="kwLivePayback">—</strong> · cuts
+            <strong id="kwLiveCut">—</strong> of your bill
+            <!-- #kwLiveSave intentionally removed from copy — the ₹/mo savings figure
+                 conflates bill-avoided with surplus credit and is told properly in §7. -->
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======== §4 · WHY THIS SIZE ======== -->
+<section class="rationale-section" aria-label="Why this size">
+  <div class="rationale-section__head">
+    <span class="kicker">Why this size</span>
+    <h2 class="rationale-section__title" id="rationaleTitle">We sized to your bill, not your roof. Here's how generation lines up with consumption.</h2>
+  </div>
+  <figure class="chart-fig rationale__chart">
+    <figcaption class="chart-cap">
+      <span class="kicker">Fig. R · monthly</span>
+      <h3>Generation vs consumption — month by month</h3>
+      <p id="rationaleChartCaption">Sizing aims to match your <strong>average</strong> month, not your peak. Chasing the May–June bars would over-export the other 9 months at the low APPC rate (₹3.25/kWh) — that's why the dashed lines, not the bar tops, are the target.</p>
+    </figcaption>
+    <div class="chart-host" id="rationaleChart"></div>
+    <div class="chart-legend chart-legend--rationale">
+      <span><i class="legend-mark legend-mark--save"></i> Solar generation</span>
+      <span><i class="legend-mark legend-mark--bill"></i> Your consumption</span>
+      <span><i class="legend-mark legend-mark--avg-gen"></i> Avg gen <strong id="rationaleLegendAvgGen">— kWh/mo</strong></span>
+      <span><i class="legend-mark legend-mark--avg-cons"></i> Avg consumption <strong id="rationaleLegendAvgCons">— kWh/mo</strong></span>
+    </div>
+  </figure>
+  <dl class="rationale__strip" id="rationaleStrip"></dl>
+  <p class="microcopy rationale-section__type-line" id="rationaleTypeLine">
+    <!-- Engine recommendation.reason_type rendered here -->
+  </p>
+</section>
+
+<!-- ======== §5 · THE THREE SYSTEM MODES ======== -->
+<section class="modes" aria-label="System modes">
+  <div class="modes__head">
+    <span class="kicker">How it works</span>
+    <h2 class="modes__title">
+      On-grid vs hybrid vs off-grid — we picked <strong id="modesPickedType">on-grid</strong>. Here's why, and what changes if you pick differently.
+    </h2>
+  </div>
   <!-- System type segment -->
   <div class="system-toggle" role="radiogroup" aria-label="System type">
-    <span class="system-toggle__label">05 · System type</span>
+    <span class="system-toggle__label">System type</span>
     <div class="system-toggle__group">
       <button class="sys-btn is-active" data-sys="OnGrid" role="radio" aria-checked="true">
         <svg class="sys-btn__icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -182,129 +357,234 @@
 
   <!-- System diagram (mounted by diagrams.js) -->
   <div id="systemDiagram" aria-live="polite"></div>
-
 </section>
 
-<!-- ======== SIZING & PRICE ======== -->
-<section class="sizing" aria-label="Size and price">
-  <div class="sizing__head">
-    <span class="kicker">06 · How big &amp; what it costs</span>
-    <h3 class="sizing__title">Slide to size your system — price, payback, and savings update live.</h3>
+<!-- ======== §6 · FINANCE — full-width cost strip ======== -->
+<section class="finance" aria-label="What it costs">
+  <div class="finance__head">
+    <span class="kicker">What it costs</span>
   </div>
-  <div class="sizing__grid">
-    <div class="sizing__choices">
-      <div class="kw-control">
-        <div class="kw-control__top">
-          <span class="kw-control__heading">Recommended for your bill</span>
-          <div class="size-cards" id="sizeCards" aria-label="Quick sizing presets"></div>
-        </div>
-
-        <div class="kw-pick">
-          <span class="kw-pick__label">You picked</span>
-          <span class="kw-pick__value mono" id="kwSliderReadout">3 kW</span>
-        </div>
-
-        <div class="kw-slider">
-          <div class="kw-slider__track">
-            <span class="kw-slider__reco" id="kwSliderReco" aria-hidden="true">
-              <span class="kw-slider__reco-label">RECOMMENDED</span>
-              <span class="kw-slider__reco-tick"></span>
-            </span>
-            <input type="range" id="kwSlider" min="1" max="10" step="0.5" value="3" class="kw-slider__input">
-          </div>
-          <div class="kw-slider__scale">
-            <span>1 kW</span>
-            <span class="kw-slider__scale-mid">5 kW</span>
-            <span>10 kW</span>
-          </div>
-          <p class="kw-slider__live" id="kwLiveLine">
-            At <strong id="kwLivePick">3 kW</strong> · pays back in
-            <strong id="kwLivePayback">—</strong> · saves
-            <strong id="kwLiveSave">—</strong>/mo · cuts
-            <strong id="kwLiveCut">—</strong> of your bill
-          </p>
-        </div>
-      </div>
-    </div>
-    <div class="sizing__price" id="sizingPrice"></div>
-  </div>
+  <dl class="cost-strip" id="costStrip"></dl>
+  <p class="cost-strip__note" id="costStripNote"></p>
 </section>
 
-<!-- ======== HEADLINE + DECISION ======== -->
-<section class="headline" id="headlineSection" aria-label="Your decision">
-  <div class="headline__lead">
-    <p class="kicker headline__kicker">07 · Your decision · computed live</p>
-    <h2 class="headline__sentence" id="headlineSentence">
-      A <span class="amber" id="hKw">3</span> kW system pays back in
-      <span class="amber" id="hPayback">4.0</span> years and saves
-      <span class="amber" id="hGain">₹10.9 lakh</span>
-      over <span id="hHorizon">25</span> years —
-      after a <span id="hSubsidy">₹78,000</span> government subsidy.
+<!-- ======== §7 · BILL CHANGE ======== -->
+<section class="bill-change" aria-label="How your bill changes">
+  <div class="bill-change__head">
+    <span class="kicker">How your bill changes</span>
+    <h2 class="bill-change__title">
+      <span class="amber" id="billChangeTariff">₹8.50</span> in,
+      <span class="amber">₹3.25</span> out — the spread is the whole game.
     </h2>
+  </div>
 
-    <div class="headline__rationale">
-      <span class="rationale-label">Why we believe this · four numbers traced back to assumptions</span>
-      <div class="rationale__grid" id="rationaleGrid"></div>
+  <!-- Combined 7a + 7c · the value math. Both columns share the same
+       number-first rhythm: big rupee figure on the right, label + caption
+       on the left. Last row in each column highlights as the takeaway. -->
+  <div class="value-panel">
+    <div class="value-panel__col">
+      <span class="kicker">Per kWh — the spread</span>
+      <ul class="value-rows" aria-label="Per-kWh value">
+        <li class="value-row">
+          <div class="value-row__lead">
+            <span class="value-row__label">Save</span>
+            <span class="value-row__sub">per self-consumed kWh</span>
+          </div>
+          <span class="value-row__num mono" id="spreadSaveRate">₹—</span>
+        </li>
+        <li class="value-row">
+          <div class="value-row__lead">
+            <span class="value-row__label">Earn</span>
+            <span class="value-row__sub">per exported kWh (APPC)</span>
+          </div>
+          <span class="value-row__num mono" id="spreadEarnRate">₹—</span>
+        </li>
+        <li class="value-row value-row--total">
+          <div class="value-row__lead">
+            <span class="value-row__label">Spread</span>
+            <span class="value-row__sub">the gap solar captures</span>
+          </div>
+          <span class="value-row__num mono" id="spreadGap">₹—</span>
+        </li>
+      </ul>
+      <p class="value-panel__caption">
+        The first kWh replaces retail; the last kWh — once you've covered your home — exports at the wholesale rate. That's why over-sizing leaks the spread.
+      </p>
+    </div>
+    <div class="value-panel__col value-panel__col--right">
+      <span class="kicker">Per year — what it adds up to</span>
+      <ul class="value-rows" aria-label="Annual value">
+        <li class="value-row">
+          <div class="value-row__lead">
+            <span class="value-row__label">Bill avoided</span>
+            <span class="value-row__sub">kWh self-consumed × retail · <span id="billAvoidedMo">—</span>/mo</span>
+          </div>
+          <span class="value-row__num mono" id="billAvoidedYr">—</span>
+        </li>
+        <li class="value-row">
+          <div class="value-row__lead">
+            <span class="value-row__label">Surplus paid out</span>
+            <span class="value-row__sub" id="surplusLabel">year-end APPC sweep · <span id="surplusMo">—</span>/mo equivalent</span>
+          </div>
+          <span class="value-row__num mono" id="surplusYr">—</span>
+        </li>
+        <li class="value-row value-row--total">
+          <div class="value-row__lead">
+            <span class="value-row__label">Total Year-1 value</span>
+            <span class="value-row__sub">bill avoided + APPC surplus</span>
+          </div>
+          <span class="value-row__num mono" id="totalValueYr">—</span>
+        </li>
+      </ul>
+      <p class="value-panel__caption">
+        <strong>Bill-avoided is real cash you don't spend each month.</strong> Surplus is reconciled by your DISCOM at year-end (or month-end for monthly settlement) at the wholesale APPC rate — not the same as monthly cashflow.
+      </p>
     </div>
   </div>
 
-  <aside class="headline__compare" aria-label="Versus the alternatives">
-    <span class="compare__title">The comparison base</span>
-    <dl class="compare__ref">
-      <div><dt>System cost (one-time)</dt><dd class="mono" id="refOutlay">—</dd></div>
-      <div><dt>Year-1 bill if you do nothing</dt><dd class="mono" id="refBill">—</dd></div>
-    </dl>
-
-    <span class="compare__title compare__title--sub">Versus alternatives · 25-yr net wealth</span>
-    <p class="compare__note">Investment gain post-tax, less bills you'd still pay. Apples-to-apples with solar.</p>
-    <dl class="data-pairs">
-      <div>
-        <dt>IRR over 25 years</dt>
-        <dd class="mono" id="cardAIrr">—</dd>
-      </div>
-      <div>
-        <dt>FD (7%, post-slab) − bills paid</dt>
-        <dd class="mono"><span id="cardAFd">—</span><span class="mult" id="cardAFdMult"></span></dd>
-      </div>
-      <div>
-        <dt>Equity (12%, post-LTCG) − bills paid</dt>
-        <dd class="mono"><span id="cardANifty">—</span><span class="mult" id="cardANiftyMult"></span></dd>
-      </div>
-      <div>
-        <dt>Solar net wealth over 25 yrs</dt>
-        <dd class="mono num--accent"><span id="cardASolar">—</span><span class="mult" id="cardASolarMult"></span></dd>
-      </div>
-    </dl>
-    <div class="headline__verdict" id="headlineVerdict"></div>
-  </aside>
-
-  <div class="headline__charts">
-    <figure class="chart-fig headline__chart">
+  <!-- 7b · monthly chart + bank line -->
+  <div class="bill-change__charts">
+    <figure class="chart-fig">
       <figcaption class="chart-cap">
-        <span class="kicker">Fig. 1</span>
-        <h4>Monthly bill vs solar savings · Year 1</h4>
-        <p>Your peak May–June bills are what makes solar pay. Monsoon dips show in July–August.</p>
+        <span class="kicker">Fig. A · monthly</span>
+        <h3>Year 1 — month by month, broken down by value tier</h3>
+        <p>Tall bars in summer mean high consumption (mostly self-consumed at retail). Tall bars in winter mean high export (settled at APPC).</p>
       </figcaption>
-      <div class="chart-host" id="monthlyChart"></div>
+      <div class="chart-host" id="billChangeMonthly"></div>
       <div class="chart-legend">
-        <span><i class="legend-mark legend-mark--bill"></i> Your bill</span>
-        <span><i class="legend-mark legend-mark--save"></i> Solar savings</span>
+        <span><i class="legend-mark legend-mark--self"></i> Self-consumed (high-value)</span>
+        <span><i class="legend-mark legend-mark--export"></i> Exported (low-value)</span>
+        <span><i class="legend-mark legend-mark--import"></i> Imported (you paid)</span>
       </div>
     </figure>
-
-    <figure class="chart-fig headline__chart">
+    <figure class="chart-fig">
       <figcaption class="chart-cap">
-        <span class="kicker">Fig. 2</span>
-        <h4>25-year cumulative position</h4>
-        <p>Cash position vs investing the same money at <span id="altLabel">12%</span>.</p>
+        <span class="kicker" id="bankKicker">Fig. B · bank</span>
+        <h3 id="bankTitle">kWh credit bank — how the seasonal surplus settles</h3>
+        <p id="bankCaption">Winter excess banks against summer draws. Whatever's left at year-end settles at APPC.</p>
       </figcaption>
-      <div class="chart-host" id="cumulativeChart"></div>
-      <div class="chart-legend">
-        <span><i class="legend-mark legend-mark--solar"></i> Solar (cumulative net)</span>
-        <span><i class="legend-mark legend-mark--alt"></i> Alternative investment</span>
-      </div>
+      <div class="chart-host" id="billChangeBank"></div>
     </figure>
   </div>
+
+</section>
+
+<!-- ======== §8 · PAYBACK ======== -->
+<section class="payback" aria-label="Payback">
+  <div class="payback__head">
+    <span class="kicker">Payback</span>
+    <h2 class="payback__title">
+      Recovered in <strong class="amber" id="paybackYears">2.6 years</strong>.
+      After that: <span id="paybackAfter">22 years</span> of free electricity, plus the annual surplus cheque.
+    </h2>
+    <p class="microcopy" id="paybackIRR">
+      25-year IRR: <strong>32%</strong> · Tariffs escalate ~5%/yr, so later savings grow.
+    </p>
+  </div>
+  <figure class="chart-fig payback__chart">
+    <figcaption class="chart-cap">
+      <span class="kicker">Fig. C</span>
+      <h3>25-year cumulative cashflow</h3>
+      <p>You're underwater for the first <span id="paybackBreakeven">2.6</span> years. After breakeven, you're in the black — and the line steepens because tariffs keep rising.</p>
+    </figcaption>
+    <!-- chart drawing + numbers panel sit in a 2-col row so the panel
+         vertically matches the chart-host (not the whole figure). -->
+    <div class="chart-row">
+      <div class="chart-host" id="cumulativeChart"></div>
+      <aside class="payback__numbers" aria-label="Payback summary">
+        <span class="kicker">Year-25 endpoints</span>
+        <dl class="payback__rows">
+          <div>
+            <dt>Solar gain at year 25</dt>
+            <dd class="mono num--accent" id="pbStatSolar25">—</dd>
+          </div>
+          <div>
+            <dt>Alt-investment gain at year 25</dt>
+            <dd class="mono" id="pbStatAlt25">—</dd>
+          </div>
+          <div>
+            <dt id="pbStatLeadLabel">Solar leads alt by</dt>
+            <dd class="mono" id="pbStatLead">—</dd>
+          </div>
+        </dl>
+        <p class="microcopy">After breakeven, every escalation in your electricity tariff makes solar steeper. The alt line follows pure compounding at your alt rate, post-LTCG.</p>
+      </aside>
+    </div>
+    <div class="chart-legend">
+      <span><i class="legend-mark legend-mark--solar"></i> Solar gain (cumulative)</span>
+      <span><i class="legend-mark legend-mark--alt"></i> Alt investment <span id="altLabel">12%</span></span>
+    </div>
+  </figure>
+</section>
+
+<!-- ======== §9 · COMPARISON ======== -->
+<section class="comparison" aria-label="Versus the alternatives">
+  <div class="comparison__head">
+    <span class="kicker">Versus the alternatives</span>
+    <h2 class="comparison__title">
+      Solar's <strong class="amber" id="cmpSolarLakh">₹13.2 lakh</strong> beats <span id="cmpRunnerUp">passive equity</span>
+      by <strong id="cmpGap">₹10.5L</strong> over 25 years. Even after taxes.
+    </h2>
+    <p class="microcopy">
+      Same outlay either way: <span id="cmpOutlay">₹70,000</span> into solar, FD, or equity. The two questions to answer:
+      <strong>(1)</strong> over 25 years, do solar's bill savings beat what you'd have paid in bills?
+      <strong>(2)</strong> is solar's annualised return better than what FD or equity would give you on the same money?
+    </p>
+  </div>
+
+  <div class="comparison__layout">
+    <!-- Block 1 — bills you'd pay vs revenue solar generates over 25 yrs -->
+    <section class="cmp-block cmp-block--rupees" aria-label="25-year rupee comparison">
+      <span class="kicker">Step 1 — Rupees over 25 years</span>
+      <div class="cmp-rupees">
+        <div class="cmp-rupees__col cmp-rupees__col--bill">
+          <span class="cmp-rupees__label">Bills if you do nothing</span>
+          <span class="cmp-rupees__value mono" id="cmpBillsTotal">—</span>
+          <span class="cmp-rupees__sub">Cumulative, with 5% annual escalation</span>
+        </div>
+        <span class="cmp-rupees__vs" aria-hidden="true">vs</span>
+        <div class="cmp-rupees__col cmp-rupees__col--solar">
+          <span class="cmp-rupees__label">Revenue from solar</span>
+          <span class="cmp-rupees__value mono num--accent" id="cmpSolarRevenue">—</span>
+          <span class="cmp-rupees__sub">Bills avoided + APPC surplus, escalated</span>
+        </div>
+      </div>
+      <p class="cmp-block__note" id="cmpRupeesNote">Solar produces more rupees of value than your 25-year bill — you come out ahead even after the system cost.</p>
+    </section>
+
+    <!-- Block 2 — annualised IRR comparison vs alternative instruments -->
+    <section class="cmp-block cmp-block--irr" aria-label="IRR comparison">
+      <span class="kicker">Step 2 — Annualised return (IRR)</span>
+      <ol class="irr-bars">
+        <li class="irr-bar irr-bar--solar" id="irrRowSolar">
+          <div class="irr-bar__head">
+            <span class="irr-bar__name">Solar — your system</span>
+            <span class="irr-bar__rate mono num--accent" id="irrSolarRate">—</span>
+          </div>
+          <div class="irr-bar__track"><span class="irr-bar__fill" style="--bar-pct: 0%"></span></div>
+          <p class="irr-bar__note">The annual rate that makes solar's 25-yr cashflow break even — i.e., the return you'd have to find elsewhere to match it.</p>
+        </li>
+        <li class="irr-bar irr-bar--equity" id="irrRowEquity">
+          <div class="irr-bar__head">
+            <span class="irr-bar__name">Equity index <span class="irr-bar__sub">post-LTCG</span></span>
+            <span class="irr-bar__rate mono" id="irrEquityRate">—</span>
+          </div>
+          <div class="irr-bar__track"><span class="irr-bar__fill" style="--bar-pct: 0%"></span></div>
+          <p class="irr-bar__note">Long-term Nifty 50 historical average, after 12.5% LTCG.</p>
+        </li>
+        <li class="irr-bar irr-bar--fd" id="irrRowFd">
+          <div class="irr-bar__head">
+            <span class="irr-bar__name">Bank FD <span class="irr-bar__sub">post-slab</span></span>
+            <span class="irr-bar__rate mono" id="irrFdRate">—</span>
+          </div>
+          <div class="irr-bar__track"><span class="irr-bar__fill" style="--bar-pct: 0%"></span></div>
+          <p class="irr-bar__note">Typical 7% bank FD, after 30% income-tax slab on interest.</p>
+        </li>
+      </ol>
+    </section>
+  </div>
+
+  <div class="headline__verdict" id="headlineVerdict"></div>
 </section>
 
 <!-- ======== ADVANCED ======== -->
@@ -317,7 +597,7 @@
   <div class="advanced__body">
 
     <div class="adv-group">
-      <h4 class="adv-group__title">System spec</h4>
+      <h3 class="adv-group__title">System spec</h3>
       <div class="adv-grid">
         <label class="adv-field">
           <span>Panel technology</span>
@@ -342,7 +622,7 @@
     </div>
 
     <div class="adv-group">
-      <h4 class="adv-group__title">Financial assumptions</h4>
+      <h3 class="adv-group__title">Financial assumptions</h3>
       <div class="adv-grid">
         <label class="adv-field">
           <span>Cost per kW (₹, gross)</span>
@@ -372,7 +652,7 @@
     </div>
 
     <div class="adv-group" id="hybridGroup" hidden>
-      <h4 class="adv-group__title">Hybrid backup parameters</h4>
+      <h3 class="adv-group__title">Hybrid backup parameters</h3>
       <div class="adv-grid">
         <label class="adv-field">
           <span>Critical load (kW)</span>
@@ -396,7 +676,7 @@
 
     <div class="adv-group">
       <div class="adv-group__head">
-        <h4 class="adv-group__title">Year-by-year cashflow</h4>
+        <h3 class="adv-group__title">Year-by-year cashflow</h3>
         <button type="button" class="export-btn" id="exportCashflow">Download CSV ↓</button>
       </div>
       <div class="year-table" id="yearTable"></div>
@@ -404,6 +684,8 @@
 
   </div>
 </details>
+
+</main>
 
 <!-- ======== FOOTER ======== -->
 <footer class="colophon">

@@ -53,6 +53,27 @@ body {
   overflow-x: hidden;
 }
 
+/* ============================================================
+   FOCUS — visible ring for keyboard users on every interactive
+   surface. Many controls override default outline:none for visual
+   reasons; :focus-visible reinstates a clear ring without showing
+   it on mouse clicks. Amber matches the accent palette.
+   ============================================================ */
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+input[type="range"]:focus-visible {
+  outline: none;
+}
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 1px var(--ink), 0 0 0 4px var(--amber-wash);
+}
+input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 1px var(--ink), 0 0 0 4px var(--amber-wash);
+}
+
 /* Subtle paper grain — generated noise via SVG */
 .grain {
   position: fixed; inset: 0; pointer-events: none; z-index: 100;
@@ -121,6 +142,7 @@ a:hover { color: var(--amber); }
   letter-spacing: -0.015em;
   font-style: italic;
   line-height: 1;
+  margin: 0;
 }
 .brand__tag {
   font-family: var(--sans);
@@ -151,18 +173,18 @@ a:hover { color: var(--amber); }
    INPUTS BAND
    ============================================================ */
 .inputs {
-  padding: 1.75rem var(--gutter) 2rem;
+  padding: 1.25rem var(--gutter) 1.5rem;
   background: var(--paper);
   border-bottom: var(--bold) solid var(--rule);
   position: relative;
 }
 .inputs__row {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1.1fr;
+  grid-template-columns: 1.25fr 1fr 1fr 1fr;
   gap: 0;
 }
 .input-group {
-  padding: 0 1.5rem;
+  padding: 0 1.1rem;
   border-right: 1px solid var(--rule-soft);
 }
 .input-group:first-child { padding-left: 0; }
@@ -211,6 +233,18 @@ a:hover { color: var(--amber); }
   color: var(--paper);
 }
 
+/* Tap-target bump on touch viewports — mode-toggle is the smallest interactive
+   control on the first input panel, so it gets first priority. */
+@media (max-width: 540px) {
+  .mode-toggle { padding: 4px; }
+  .mode-toggle__opt {
+    min-height: 36px;
+    padding: 0.55rem 0.95rem;
+    display: inline-flex;
+    align-items: center;
+  }
+}
+
 /* Lifestyle picker */
 .lifestyle-label {
   display: block; font-size: 0.78rem;
@@ -220,6 +254,16 @@ a:hover { color: var(--amber); }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6px;
+}
+.lifestyle-hint {
+  margin-top: 0.55rem;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--ink-mute);
+}
+.lifestyle-hint em {
+  font-style: italic;
+  color: var(--ink-soft);
 }
 .lifestyle-tile {
   text-align: left;
@@ -265,8 +309,8 @@ input[type="range"] {
   width: 100%; height: 2px;
   background: var(--rule-soft);
   border-radius: 0;
-  outline: none;
 }
+input[type="range"]:focus:not(:focus-visible) { outline: none; }
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none; appearance: none;
   width: 14px; height: 14px;
@@ -303,7 +347,8 @@ input[type="range"]::-moz-range-thumb {
   cursor: pointer;
   border-radius: 0;
 }
-.select:focus { outline: none; border-bottom-color: var(--amber); }
+.select:focus { border-bottom-color: var(--amber); }
+.select:focus:not(:focus-visible) { outline: none; }
 .select--sm { font-size: 0.85rem; padding: 0.4rem 1.5rem 0.4rem 0; }
 
 /* Roof buttons */
@@ -375,10 +420,30 @@ input[type="range"]::-moz-range-thumb {
 /* ============================================================
    SYSTEM TYPE TOGGLE
    ============================================================ */
+.modes {
+  padding: 1.5rem var(--gutter);
+}
+.modes__head {
+  padding: 0 0 0.5rem;
+  max-width: 70ch;
+}
+.modes__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 380;
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0.4rem 0 0;
+}
+.modes__title strong {
+  font-style: normal;
+  font-weight: 500;
+  text-transform: lowercase;
+}
 .system-toggle {
-  margin-top: 1.75rem;
-  padding-top: 1.5rem;
-  border-top: 1px dashed var(--rule-soft);
+  margin-top: 1rem;
   display: flex; align-items: center; gap: 1.5rem;
 }
 .system-toggle__label {
@@ -456,75 +521,26 @@ input[type="range"]::-moz-range-thumb {
   line-height: 1.4;
 }
 
+/* Tablet — sub-labels (recommended/backup/enablement) get cramped before the
+   main labels do, so drop them at 900px before the row stacks at 720px. */
+@media (max-width: 900px) {
+  .sys-btn__sub { display: none; }
+  .sys-btn { padding: 0.7rem 0.8rem; grid-template-columns: auto 1fr; }
+}
 @media (max-width: 720px) {
   .system-toggle { flex-direction: column; align-items: stretch; gap: 0.75rem; }
   .system-toggle__label { min-width: 0; }
   .sys-btn { grid-template-columns: auto 1fr; padding: 0.65rem 0.7rem; }
-  .sys-btn__sub { display: none; }
 }
 
 /* System-button icons + diagram styles live in diagrams.css */
 
 /* ============================================================
-   HEADLINE
+   §9 VERDICT + COMPARE PANEL — formerly inside `<section class="headline">`,
+   relocated to the comparison section. The class names retain their
+   `headline__` prefix as a hook so the existing JS (renderVerdict /
+   renderCardA) can keep targeting them without rebinding.
    ============================================================ */
-.headline {
-  padding: 4rem var(--gutter) 3rem;
-  position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
-  grid-auto-rows: auto;
-  gap: 2.25rem 3rem;
-  align-items: start;
-  border-bottom: 1px solid var(--rule);
-}
-.headline__lead { min-width: 0; }
-
-/* Charts pulled into the headline section. The wrapper spans the full grid
-   width and runs its own equal-columns grid so both charts are the same size,
-   regardless of the lead/aside ratio above. */
-.headline__charts {
-  grid-column: 1 / -1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem 2.5rem;
-  padding-top: 1.75rem;
-  margin-top: 0.5rem;
-  border-top: 1px dashed var(--rule-soft);
-}
-.headline__chart {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.headline__chart .chart-cap { margin-bottom: 0.75rem; }
-.headline__chart .chart-host {
-  flex: 1;
-  min-height: 200px;
-}
-.headline__chart .chart-legend { margin-top: 0.6rem; }
-
-@media (max-width: 820px) {
-  .headline { grid-template-columns: 1fr; padding: 3rem var(--gutter) 2rem; }
-  .headline__charts { grid-template-columns: 1fr; gap: 1.5rem; padding-top: 1.25rem; }
-}
-.headline__kicker { display: block; margin-bottom: 1.25rem; }
-.headline__sentence {
-  font-family: var(--serif);
-  font-variation-settings: 'opsz' 144, 'SOFT' 80, 'wght' 320;
-  font-size: clamp(1.85rem, 4.6vw, 3.6rem);
-  line-height: 1.06;
-  letter-spacing: -0.022em;
-  color: var(--ink);
-  font-style: normal;
-}
-.headline__sentence .amber {
-  font-variation-settings: 'opsz' 144, 'SOFT' 80, 'wght' 420;
-  font-style: italic;
-  color: var(--amber);
-  white-space: nowrap;
-}
 
 /* Verdict block — sits at the bottom of the compare aside, sealing the
    numbers above with a one-line conclusion. Pill + body. */
@@ -556,115 +572,151 @@ input[type="range"]::-moz-range-thumb {
 .headline__verdict.tone-positive { border-top-color: var(--sage); }
 .headline__verdict.tone-caution  { border-top-color: var(--crimson); }
 
-/* Compare aside — IRR + FD + equity + net-gain */
-.headline__compare {
-  padding: 1.25rem 1.4rem 1.4rem;
+/* §9 — two-step comparison: rupee totals (Step 1) and annualised IRR vs
+   alternative instruments (Step 2). Side-by-side blocks fill the row; on
+   narrow viewports they stack. */
+.comparison__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
+  gap: 1.5rem;
+  align-items: stretch;
+  margin-bottom: 1rem;
+}
+@media (max-width: 920px) {
+  .comparison__layout { grid-template-columns: 1fr; }
+}
+.cmp-block {
+  padding: 1.1rem 1.35rem 1.25rem;
   background: var(--paper-deep);
   border: 1px solid var(--rule-soft);
   border-left: 2px solid var(--ink);
   border-radius: 2px;
+  display: flex; flex-direction: column;
 }
-.headline__compare .compare__title {
+.cmp-block > .kicker {
   display: block;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-mute);
   margin-bottom: 0.85rem;
   padding-bottom: 0.55rem;
   border-bottom: 1px dashed var(--rule-soft);
 }
-
-/* Reference rows — anchor the comparison: what you'd put in vs what you'd
-   pay if you do nothing */
-.headline__compare .compare__ref {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-  padding-bottom: 0.85rem;
-  margin-bottom: 0.95rem;
-  border-bottom: 1px solid var(--rule-soft);
-}
-.headline__compare .compare__ref > div {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 0.6rem;
-}
-.headline__compare .compare__ref dt {
-  font-family: var(--mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
-  color: var(--ink-mute);
-  text-transform: uppercase;
-}
-.headline__compare .compare__ref dd {
-  font-family: var(--mono);
-  font-feature-settings: 'tnum';
-  font-size: 0.85rem;
-  color: var(--ink);
-  font-weight: 500;
-}
-.headline__compare .compare__title--sub {
-  margin-top: 0;
-  margin-bottom: 0.45rem;
-  padding-bottom: 0.5rem;
-}
-.headline__compare .compare__note {
+.cmp-block__note {
   font-family: var(--serif);
   font-style: italic;
-  font-size: 0.78rem;
-  line-height: 1.35;
-  color: var(--ink-mute);
-  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin: 0.85rem 0 0;
 }
+.cmp-block__note strong { color: var(--ink); font-style: normal; font-weight: 500; }
 
-/* Multiplier sub-line under each comparison value */
-.headline__compare .data-pairs dd .mult {
-  display: block;
+/* Step 1 — bills vs solar revenue, side by side */
+.cmp-rupees {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+.cmp-rupees__col {
+  display: flex; flex-direction: column; gap: 0.3rem;
+}
+.cmp-rupees__col--solar { text-align: right; }
+.cmp-rupees__label {
   font-family: var(--mono);
-  font-size: 0.66rem;
-  font-weight: 400;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--ink-mute);
-  margin-top: 2px;
-  letter-spacing: 0.04em;
 }
-.headline__compare .data-pairs dd.num--accent .mult {
-  color: var(--amber-deep);
+.cmp-rupees__value {
+  font-family: var(--serif);
+  font-style: italic;
+  font-variation-settings: 'opsz' 60, 'SOFT' 70, 'wght' 400;
+  font-size: 1.85rem;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.cmp-rupees__value.num--accent { color: var(--amber-deep); }
+.cmp-rupees__sub {
+  font-size: 0.74rem;
+  color: var(--ink-mute);
+  font-style: italic;
+}
+.cmp-rupees__vs {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  align-self: center;
+  padding: 0 0.25rem;
 }
 
-/* Override the section data-pairs rows: rows get bottom padding for the bar,
-   no top borders (the bar visually separates each row). */
-.headline__compare .data-pairs { gap: 0.35rem; }
-.headline__compare .data-pairs > div {
-  position: relative;
-  border-top: 0;
-  padding: 0.45rem 0 0.85rem;
+/* Step 2 — annualised IRR comparison rows */
+.irr-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex; flex-direction: column;
+  gap: 0.95rem;
 }
-
-/* Magnitude bar — width set in JS via the --bar-pct custom property */
-.headline__compare .data-pairs > div::after {
-  content: '';
-  position: absolute;
-  left: 0; right: auto;
-  bottom: 0.35rem;
-  height: 2px;
-  width: var(--bar-pct, 0%);
-  background: var(--rule-soft);
+.irr-bar {
+  padding: 0.55rem 0;
+  border-top: 1px dashed var(--rule-soft);
+}
+.irr-bar:first-child { border-top: 0; padding-top: 0; }
+.irr-bar__head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+.irr-bar__name {
+  font-family: var(--serif);
+  font-style: italic;
+  font-variation-settings: 'opsz' 30, 'SOFT' 50, 'wght' 420;
+  font-size: 1rem;
+  color: var(--ink);
+}
+.irr-bar__sub {
+  font-family: var(--mono);
+  font-style: normal;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  margin-left: 0.4rem;
+}
+.irr-bar__rate {
+  font-size: 1.15rem;
+  font-weight: 500;
+  font-feature-settings: 'tnum';
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.irr-bar__rate.num--accent { color: var(--amber-deep); }
+.irr-bar__track {
+  height: 6px;
+  background: var(--paper);
+  border: 1px solid var(--rule-soft);
   border-radius: 1px;
+  overflow: hidden;
+  margin-bottom: 0.35rem;
+}
+.irr-bar__fill {
+  display: block;
+  height: 100%;
+  width: var(--bar-pct, 0%);
   transition: width 0.45s var(--ease);
 }
-/* Solar net gain — the punchline row */
-.headline__compare .data-pairs > div:has(.num--accent) {
-  border-top: 1.5px solid var(--ink);
-  padding-top: 0.7rem;
-  margin-top: 0.4rem;
-}
-.headline__compare .data-pairs > div:has(.num--accent)::after {
-  background: var(--amber);
-  height: 3px;
-}
-.headline__compare .data-pairs > div:has(.num--accent) dt {
-  color: var(--ink);
-  font-weight: 500;
+.irr-bar--solar .irr-bar__fill  { background: var(--amber); }
+.irr-bar--equity .irr-bar__fill { background: var(--ink); opacity: 0.6; }
+.irr-bar--fd .irr-bar__fill     { background: var(--ink-mute); }
+.irr-bar__note {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--ink-mute);
+  margin: 0;
 }
 
 /* Tick animation for live numbers */
@@ -916,7 +968,7 @@ input[type="range"]::-moz-range-thumb {
 
 .chart-fig { display: flex; flex-direction: column; gap: 1rem; }
 .chart-cap .kicker { display: block; margin-bottom: 0.4rem; }
-.chart-cap h4 {
+.chart-cap h3 {
   font-family: var(--serif);
   font-variation-settings: 'opsz' 30, 'SOFT' 60, 'wght' 400;
   font-style: italic;
@@ -957,60 +1009,112 @@ input[type="range"]::-moz-range-thumb {
 .legend-mark--save   { background: var(--amber); }
 .legend-mark--solar  { background: var(--amber); }
 .legend-mark--alt    { background: var(--ink); border: 1px dashed var(--ink); height: 0; border-bottom: 0; border-top: 1.5px dashed var(--ink); }
+/* Dashed-line marks for the §4 average reference lines — render as a 1.2px
+   dashed border-top so the swatch reads as "horizontal line", not a bar. */
+.legend-mark--avg-gen  { background: transparent; height: 0; border: 0; border-top: 1.2px dashed var(--amber-deep); }
+.legend-mark--avg-cons { background: transparent; height: 0; border: 0; border-top: 1.2px dashed var(--ink); opacity: 0.7; }
+
+/* §4 legend wraps to 2 lines on narrow widths and shows the inline avg
+   numbers as bold ink so they're readable at a glance. */
+.chart-legend--rationale {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+  column-gap: 1.5rem;
+}
+.chart-legend--rationale strong {
+  color: var(--ink);
+  font-weight: 500;
+  margin-left: 4px;
+  text-transform: none;
+  letter-spacing: 0;
+}
 
 /* ============================================================
-   RATIONALE STRIP
+   §4 · WHY THIS SIZE — RATIONALE SECTION
    ============================================================ */
-/* Rationale block — now lives inside the headline lead column,
-   filling the white space under the editorial sentence. */
-.headline__rationale {
-  margin-top: 1.75rem;
-  padding-top: 1.25rem;
-  border-top: 1px dashed var(--rule-soft);
+/* Hosts the four-cell rationale grid plus the engine's one-line
+   reason for the system-type pick. Mirrors the visual treatment
+   the block had inside .headline, now in its own section. */
+.rationale-section {
+  padding: 1.75rem var(--gutter);
+  border-top: 1px solid var(--rule-soft);
 }
-.headline__rationale .rationale-label {
+.rationale-section__head {
+  margin-bottom: 1.25rem;
+  max-width: 56rem;
+}
+.rationale-section__head .kicker {
   display: block;
+  margin-bottom: 0.6rem;
+}
+.rationale-section__title {
+  font-family: var(--serif);
+  font-variation-settings: 'opsz' 60, 'SOFT' 60, 'wght' 380;
+  font-style: italic;
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  font-weight: 400;
+}
+/* Chart-led layout: the gen-vs-cons chart is the lead visual, the numbers
+   strip sits below as a tight summary. The legacy 4-card grid is gone — its
+   info either lives in the chart, the strip, or other sections. */
+.rationale__chart {
+  margin: 0 0 1.25rem;
+  max-width: none;
+}
+.rationale__chart .chart-host {
+  aspect-ratio: 18 / 6;
+}
+.rationale__chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.rationale__strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 0.85rem 0;
+}
+.rationale__strip-cell {
+  padding: 0 1rem;
+  border-right: 1px dashed var(--rule-soft);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.rationale__strip-cell:first-child { padding-left: 0; }
+.rationale__strip-cell:last-child  { padding-right: 0; border-right: 0; }
+.rationale__strip dt {
   font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-mute);
-  margin-bottom: 1rem;
 }
-.headline__rationale .rationale__grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.1rem 1.5rem;
-}
-@media (max-width: 540px) {
-  .headline__rationale .rationale__grid { grid-template-columns: 1fr; }
-}
-.headline__rationale .rationale__cell {
-  padding: 0;
-  border: 0;
-}
-.headline__rationale .rationale__num {
-  font-family: var(--serif);
-  font-variation-settings: 'opsz' 60, 'SOFT' 70, 'wght' 380;
-  font-style: italic;
-  font-size: 1.55rem;
-  color: var(--amber);
-  display: block;
-  letter-spacing: -0.02em;
-  line-height: 1;
-  margin-bottom: 0.3rem;
-}
-.headline__rationale .rationale__title {
-  font-size: 0.82rem;
+.rationale__strip dd {
+  font-size: 1rem;
+  color: var(--amber-deep);
   font-weight: 500;
-  color: var(--ink);
-  margin-bottom: 0.2rem;
 }
-.headline__rationale .rationale__sub {
-  font-size: 0.74rem;
-  color: var(--ink-soft);
+
+@media (max-width: 720px) {
+  .rationale__strip { grid-template-columns: repeat(2, 1fr); gap: 0.75rem 0; }
+  .rationale__strip-cell { padding: 0.5rem 0.75rem; border-right: 0; border-bottom: 1px dashed var(--rule-soft); }
+  .rationale__strip-cell:nth-last-child(-n+2) { border-bottom: 0; }
+}
+.rationale-section__type-line {
+  margin-top: 0.85rem;
+  padding-top: 0;
+  font-family: var(--serif);
   font-style: italic;
-  line-height: 1.4;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  max-width: 56rem;
 }
 
 /* ============================================================
@@ -1146,7 +1250,8 @@ input[type="range"]::-moz-range-thumb {
   width: 100%;
   border-radius: 0;
 }
-.input--sm:focus { outline: none; border-bottom-color: var(--amber); }
+.input--sm:focus { border-bottom-color: var(--amber); }
+.input--sm:focus:not(:focus-visible) { outline: none; }
 
 input[type="checkbox"] {
   width: 16px; height: 16px;
@@ -1231,12 +1336,11 @@ input[type="checkbox"] {
 /* ============================================================
    PAGE-LOAD STAGGER
    ============================================================ */
-.masthead, .inputs, .sizing, .headline, .cards, .advanced, .colophon {
+.masthead, .inputs, .sizing, .cards, .advanced, .colophon {
   animation: rise 0.65s var(--ease) backwards;
 }
 .inputs    { animation-delay: 0.04s; }
 .sizing    { animation-delay: 0.08s; }
-.headline  { animation-delay: 0.12s; }
 .cards     { animation-delay: 0.18s; }
 .rationale { animation-delay: 0.28s; }
 .advanced  { animation-delay: 0.34s; }
@@ -1253,4 +1357,664 @@ input[type="checkbox"] {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ============================================================
+   §2 · BILLING PATTERN — inferred 12-month bill shape
+   ============================================================ */
+.billing-pattern {
+  padding: 1.5rem var(--gutter);
+  border-top: 1px solid var(--rule-soft);
+}
+.billing-pattern__head {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+}
+.billing-pattern__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 380;
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0.4rem 0;
+}
+.billing-pattern__title strong { font-style: normal; font-weight: 500; }
+.billing-pattern__chart {
+  max-width: none;
+  margin: 0;
+}
+.billing-pattern__chart .chart-host {
+  aspect-ratio: 18 / 7;
+}
+.billing-pattern__chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* chart-row — 2-col grid that pairs the chart drawing with a side panel,
+   placing them in the same row inside <figure>. The figcaption sits above
+   this row, the chart-legend (if any) below — so the panel's vertical
+   extent matches the chart-host only, not the whole figure. Used by §2
+   bill-numbers and §8 payback__numbers. */
+.chart-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+@media (max-width: 820px) {
+  .chart-row { grid-template-columns: 1fr; gap: 1.25rem; }
+}
+
+/* The math panel — explicit numbers next to the chart. Stretches to match
+   the chart's height so the right column doesn't trail off short. Rows
+   distribute evenly with space-between; the closing microcopy hugs the
+   bottom of the panel. */
+.bill-numbers {
+  border-left: 1px solid var(--rule-soft);
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  height: 100%;
+}
+.bill-numbers .kicker {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+.bill-numbers__rows {
+  display: flex; flex-direction: column;
+  flex: 1;
+  margin-bottom: 0.85rem;
+  justify-content: space-between;
+}
+.bill-numbers__rows > div {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 0.45rem 0;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.bill-numbers__rows > div:last-child { border-bottom: none; }
+.bill-numbers__rows dt {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.bill-numbers__rows dd {
+  font-size: 1rem;
+  color: var(--ink);
+}
+.bill-numbers .num--accent { color: var(--amber-deep); font-weight: 500; font-size: 1.1rem; }
+.bill-numbers .microcopy { font-size: 0.78rem; line-height: 1.45; margin-top: auto; }
+
+@media (max-width: 820px) {
+  .bill-numbers { border-left: 0; padding-left: 0; border-top: 1px solid var(--rule-soft); padding-top: 1rem; }
+}
+
+/* ============================================================
+   §9 · COMPARISON — versus the alternatives (relocated from headline)
+   ============================================================ */
+.comparison {
+  padding: 1.5rem var(--gutter);
+  border-top: 1px solid var(--rule-soft);
+}
+.comparison__head {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+}
+.comparison__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 380;
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0.4rem 0 0.6rem;
+}
+.comparison__title strong { font-style: normal; font-weight: 500; }
+.comparison__panel {
+  margin: 0;
+  max-width: 56rem;
+}
+
+/* ============================================================
+   §8 · PAYBACK — relocated cumulative chart + breakeven story
+   ============================================================ */
+.payback {
+  padding: 1.5rem var(--gutter);
+  border-top: 1px solid var(--rule-soft);
+}
+.payback__head {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+}
+.payback__title {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 380;
+  font-size: clamp(1.25rem, 2.2vw, 1.6rem);
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0.4rem 0 0.6rem;
+}
+.payback__title strong { font-style: normal; font-weight: 500; }
+
+/* Chart + side panel layout is owned by .chart-row (defined in the §2
+   block) — the figcaption sits above the row, legend below, and the
+   right-side payback__numbers vertically matches the chart-host. */
+.payback__chart {
+  max-width: none;
+  margin: 0;
+}
+.payback__chart .chart-host {
+  aspect-ratio: 18 / 8;
+}
+.payback__chart svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+/* Stretches to match the chart's height; rows distribute evenly with
+   space-between, microcopy hugs the bottom (margin-top: auto). */
+.payback__numbers {
+  border-left: 1px solid var(--rule-soft);
+  padding-left: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  height: 100%;
+}
+.payback__numbers .kicker {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+.payback__rows {
+  display: flex; flex-direction: column;
+  flex: 1;
+  margin-bottom: 0.85rem;
+  justify-content: space-between;
+}
+.payback__rows > div {
+  padding: 0.55rem 0;
+  border-bottom: 1px dashed var(--rule-soft);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.payback__rows > div:last-child { border-bottom: 0; }
+.payback__rows dt {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.payback__rows dd {
+  font-size: 1.05rem;
+  color: var(--ink);
+}
+.payback__numbers .num--accent { color: var(--amber-deep); font-weight: 500; font-size: 1.2rem; }
+.payback__numbers .microcopy { font-size: 0.78rem; line-height: 1.45; margin-top: auto; }
+
+@media (max-width: 820px) {
+  .payback__numbers {
+    border-left: 0; padding-left: 0;
+    border-top: 1px solid var(--rule-soft); padding-top: 1rem;
+  }
+}
+
+/* ============================================================
+   §6 · FINANCE — price box + inline subsidy note
+   ============================================================ */
+.finance {
+  padding: 1.75rem var(--gutter);
+  border-top: 1px solid var(--rule-soft);
+}
+.finance__head {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+}
+.finance__head .kicker {
+  display: block;
+  margin-bottom: 0.55rem;
+}
+/* §6 cost strip — 4 cells across full section width. Each cell shows a
+   small mono label and a large mono number; "you pay" and "year-1 savings"
+   get accent color treatment. Tight, no narrative title above. */
+.cost-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-top: 1px solid var(--rule-soft);
+  border-bottom: 1px solid var(--rule-soft);
+  padding: 1rem 0;
+  margin: 0;
+}
+.cost-cell {
+  padding: 0.25rem 1.25rem;
+  border-right: 1px dashed var(--rule-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.cost-cell:first-child { padding-left: 0; }
+.cost-cell:last-child  { padding-right: 0; border-right: 0; }
+.cost-cell dt {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.cost-cell dd {
+  font-family: var(--mono);
+  font-feature-settings: 'tnum';
+  font-size: 1.35rem;
+  font-weight: 500;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin: 0;
+  white-space: nowrap;
+}
+.cost-cell--minus dd { color: var(--sage); }
+.cost-cell--total dd { color: var(--amber-deep); font-size: 1.55rem; }
+.cost-cell--gain  dd { color: var(--sage);       font-size: 1.55rem; }
+.cost-cell__sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  color: var(--ink-mute);
+  margin: 0;
+}
+.cost-strip__note {
+  margin-top: 0.85rem;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--ink-mute);
+  line-height: 1.45;
+}
+.cost-strip__note:empty { display: none; }
+
+@media (max-width: 820px) {
+  .cost-strip { grid-template-columns: repeat(2, 1fr); }
+  .cost-cell { padding: 0.5rem 0.75rem; border-right: 0; border-bottom: 1px dashed var(--rule-soft); }
+  .cost-cell:nth-last-child(-n+2) { border-bottom: 0; }
+  .cost-cell:nth-child(odd)  { padding-left: 0; }
+  .cost-cell:nth-child(even) { padding-right: 0; }
+}
+
+/* ============================================================
+   §7 · BILL CHANGE — spread + monthly stacked + bank line + summary
+   ============================================================ */
+/* §7 retired the old worked-example — its arithmetic was misleading.
+   Bill-change story now lives in .bill-change with explicit spread + bank. */
+.sys-bill { display: none; }
+
+.bill-change {
+  padding: 1.75rem var(--gutter);
+  border-top: 1px solid var(--rule-soft);
+}
+.bill-change__head {
+  max-width: 70ch;
+  margin-bottom: 1rem;
+}
+.bill-change__head .kicker {
+  display: block;
+  margin-bottom: 0.55rem;
+}
+.bill-change__title {
+  font-family: var(--serif);
+  font-variation-settings: 'opsz' 60, 'SOFT' 60, 'wght' 380;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--ink);
+  margin: 0;
+}
+.bill-change__title .amber {
+  font-style: italic;
+  font-variation-settings: 'opsz' 60, 'SOFT' 60, 'wght' 420;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+/* §7 value panel — merges the per-kWh spread (left) with the per-year
+   totals (right) into a single block. The narrative reads "rate × volume
+   = total"; both columns share the same panel chrome. Stacks below 820px. */
+.value-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  border: 1px solid var(--rule-soft);
+  border-left: 2px solid var(--ink);
+  border-radius: 2px;
+  background: var(--paper-deep);
+  margin-bottom: 1.25rem;
+}
+.value-panel__col {
+  padding: 1.1rem 1.35rem 1.2rem;
+  display: flex; flex-direction: column;
+}
+.value-panel__col--right {
+  border-left: 1px dashed var(--rule-soft);
+  background: var(--paper);
+}
+.value-panel__col > .kicker {
+  display: block;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.value-panel__caption {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  margin: 0.85rem 0 0;
+}
+.value-panel__caption strong {
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 500;
+}
+.value-panel .spread {
+  margin: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* Value rows — number-first layout used by both columns of the value-panel.
+   Label + sub-text on the left, big mono ₹ figure pinned right. The last
+   row in each column is the "total" — heavier divider above + amber color. */
+.value-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.value-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.65rem 0;
+  border-top: 1px dashed var(--rule-soft);
+}
+.value-row:first-child { border-top: 0; padding-top: 0; }
+.value-row__lead {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.value-row__label {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  font-weight: 500;
+}
+.value-row__sub {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.75rem;
+  color: var(--ink-mute);
+  line-height: 1.35;
+}
+.value-row__num {
+  font-size: 1.15rem;
+  font-weight: 500;
+  font-feature-settings: 'tnum';
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.value-row--total {
+  border-top: 1.5px solid var(--ink);
+  margin-top: 0.4rem;
+  padding-top: 0.85rem;
+}
+.value-row--total .value-row__label { color: var(--amber-deep); }
+.value-row--total .value-row__num   {
+  color: var(--amber-deep);
+  font-size: 1.35rem;
+}
+@media (max-width: 820px) {
+  .value-panel { grid-template-columns: 1fr; }
+  .value-panel__col--right {
+    border-left: 0;
+    border-top: 1px dashed var(--rule-soft);
+  }
+}
+
+.spread {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--rule-soft);
+  border-left: 2px solid var(--ink);
+  background: var(--paper-deep);
+  border-radius: 2px;
+  margin-bottom: 0;
+}
+.spread__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.95rem;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.spread__row:last-child { border-bottom: 0; }
+.spread__label {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.005em;
+}
+.spread__value {
+  font-size: 0.92rem;
+  color: var(--ink);
+  font-weight: 500;
+  font-feature-settings: 'tnum';
+  letter-spacing: -0.005em;
+}
+.spread__row--save .spread__value { color: var(--amber-deep); font-size: 1rem; }
+.spread__row--earn .spread__value { color: var(--ink-soft); }
+.spread__row--gap {
+  background: var(--paper);
+  border-top: 1.5px solid var(--ink);
+  padding-top: 0.55rem;
+  padding-bottom: 0.55rem;
+}
+.spread__row--gap .spread__label {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink);
+  font-weight: 500;
+}
+.spread__row--gap .spread__value {
+  color: var(--amber);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.bill-change__lead {
+  font-family: var(--serif);
+  font-variation-settings: 'opsz' 14, 'SOFT' 50, 'wght' 380;
+  font-style: italic;
+  font-size: 0.96rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0;
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--rule-soft);
+}
+@media (max-width: 720px) {
+  .bill-change__lead { padding-left: 0; border-left: 0; }
+}
+.bill-change__lead strong {
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 500;
+}
+
+/* 7b · charts — 2-column grid on desktop, stacked on mobile */
+.bill-change__charts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem 2.5rem;
+  margin-bottom: 2rem;
+}
+.bill-change__charts .chart-fig { margin: 0; }
+.bill-change__charts .chart-cap { margin-bottom: 0.75rem; }
+.bill-change__charts .chart-host {
+  flex: 1;
+  min-height: 220px;
+}
+@media (max-width: 820px) {
+  .bill-change__charts { grid-template-columns: 1fr; gap: 1.75rem; }
+}
+
+/* Bill-change legend marks — mirror amber tiers used in the chart */
+.legend-mark--self   { background: var(--amber); }
+.legend-mark--export { background: var(--amber-wash); border: 1px solid var(--amber-deep); box-sizing: border-box; }
+.legend-mark--import { background: var(--rule-soft); }
+
+/* Fallback message for monthly-settlement DISCOMs (no bank) */
+.bank-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  text-align: center;
+}
+.bank-fallback p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  max-width: 32ch;
+}
+
+/* 7c · reconciled summary — 2-column: numbers left, why-they-differ note
+   right. Side-by-side at desktop, stacked below 720px. */
+.bill-change__summary {
+  padding: 1.4rem 1.5rem 1.5rem;
+  background: var(--paper-deep);
+  border: 1px solid var(--rule-soft);
+  border-left: 2px solid var(--ink);
+  border-radius: 2px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 1.75rem;
+  align-items: start;
+}
+.bill-change__summary-note {
+  padding-left: 1.25rem;
+  border-left: 1px solid var(--rule-soft);
+}
+.bill-change__summary-note .microcopy {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.bill-change__summary-note .microcopy strong {
+  color: var(--ink);
+  font-style: normal;
+}
+@media (max-width: 720px) {
+  .bill-change__summary { grid-template-columns: 1fr; gap: 1rem; }
+  .bill-change__summary-note { padding-left: 0; border-left: 0; padding-top: 0.85rem; border-top: 1px dashed var(--rule-soft); }
+}
+.bill-change__summary > .kicker {
+  display: block;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+.bill-change__rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.bill-change__rows > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px dotted var(--rule-soft);
+}
+.bill-change__rows > div:first-child { border-top: 0; }
+.bill-change__rows dt {
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+.bill-change__rows dt small {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--ink-mute);
+  font-style: italic;
+  margin-top: 1px;
+}
+.bill-change__rows dd {
+  font-size: 0.92rem;
+  color: var(--ink);
+  text-align: right;
+  font-feature-settings: 'tnum';
+}
+.bill-change__rows dd .ink-soft {
+  color: var(--ink-mute);
+}
+.bill-change__total {
+  border-top: 1.5px solid var(--ink) !important;
+  margin-top: 0.4rem;
+  padding-top: 0.75rem !important;
+}
+.bill-change__total dt {
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink);
+  font-weight: 500;
+}
+.bill-change__total dd.num--accent {
+  color: var(--amber-deep);
+  font-weight: 500;
+  font-size: 1.05rem;
+}
+.bill-change__summary .microcopy {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--rule-soft);
+  line-height: 1.5;
+}
+.bill-change__summary .microcopy strong {
+  color: var(--ink);
+  font-style: normal;
+  font-weight: 500;
 }

@@ -26,33 +26,36 @@
   color: var(--ink-mute);
 }
 
-/* ---- Pane (one per system type) ---- */
+/* ---- Pane (one per system type) ----
+   The pane used to be a 2-col grid (SVG | worked-example bill), but the
+   bill panel was retired in §7 (.sys-bill { display: none }). With only
+   the SVG remaining we collapse to a single centered column. */
 .sys-diagram__pane { display: none; }
 .sys-diagram__pane.is-active {
-  display: grid;
-  grid-template-columns: 1.45fr 1fr;
-  gap: 1.5rem 2rem;
+  display: flex;
+  justify-content: center;
   align-items: center;
   animation: paneIn 0.4s var(--ease) both;
+}
+.sys-diagram__schematic {
+  width: 100%;
+  margin: 0 auto;
 }
 @keyframes paneIn {
   from { opacity: 0; transform: translateY(3px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-@media (max-width: 820px) {
-  .sys-diagram__pane.is-active {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-}
-
-/* ---- The schematic SVG ---- */
+/* ---- The schematic SVG ----
+   max-height clamps the height, which (via preserveAspectRatio) clamps
+   the rendered width below 100% of the container. margin auto centers
+   the SVG within its (wider) parent so the diagram doesn't sit left. */
 .sys-diagram__svg {
   width: 100%;
   height: auto;
   max-height: 320px;
   display: block;
+  margin: 0 auto;
 }
 
 /* Title strip atop each schematic */
@@ -326,7 +329,7 @@
    Sizing & price section — standalone band between inputs & headline
    ============================================================ */
 .sizing {
-  padding: 2.5rem var(--gutter) 2.75rem;
+  padding: 1.75rem var(--gutter);
   background: var(--paper-deep);
   border-bottom: var(--bold) solid var(--rule);
 }
@@ -343,35 +346,21 @@
 }
 .sizing__grid {
   display: grid;
-  grid-template-columns: 1.45fr 1fr;
-  gap: 2.25rem;
-  align-items: stretch;
-}
-@media (max-width: 820px) {
-  .sizing__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+  /* Single column — the price box moved to §6. */
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
 }
 
-/* Wrapper inside the grid cell — fills the cell so the kw-control matches the
-   right-hand price card height. */
-.sizing__choices {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
+.sizing__choices { display: block; }
 
-/* Capacity control (left side of the section) — recommendation + slider */
+/* Capacity control — recommendation + slider. Sits at natural height; the
+   stretch-to-fill pattern is gone since the right-hand price card moved to §6. */
 .kw-control {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 1.1rem 1.25rem;
+  padding: 1rem 1.25rem 1.1rem;
   background: var(--paper);
   border: 1px solid var(--rule-soft);
   border-radius: 2px;
 }
-/* Push the live readout line to the bottom so the card doesn't have a hollow
-   tail when stretched to match the price card. */
-.kw-control .kw-slider__live { margin-top: auto; }
 
 .kw-control__top {
   display: flex;
@@ -379,8 +368,8 @@
   justify-content: space-between;
   gap: 1.25rem;
   flex-wrap: wrap;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
   border-bottom: 1px dashed var(--rule-soft);
 }
 .kw-control__heading {
@@ -439,7 +428,7 @@
   color: var(--ink-mute);
 }
 .kw-pick__value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 500;
   color: var(--amber);
   letter-spacing: -0.01em;
@@ -448,7 +437,7 @@
 /* Slider */
 .kw-slider__track {
   position: relative;
-  margin: 1.6rem 0 0.3rem;
+  margin: 1.2rem 0 0.3rem;
 }
 .kw-slider__reco {
   position: absolute;
@@ -482,11 +471,11 @@
   height: 4px;
   background: var(--rule-soft);
   border-radius: 2px;
-  outline: none;
   margin: 0;
   position: relative;
   z-index: 1;
 }
+.kw-slider__input:focus:not(:focus-visible) { outline: none; }
 .kw-slider__input::-webkit-slider-thumb {
   -webkit-appearance: none;
   width: 18px;
@@ -536,7 +525,9 @@
   font-size: 1rem;
 }
 
-/* Price-breakdown panel (right side of the section) */
+/* Price-breakdown panel — now full-width in §6 (the subsidy kink chart was
+   removed). Capped to a sensible max-width so the rows don't sprawl on
+   ultra-wide displays. */
 .sizing__price {
   padding: 1.1rem 1.25rem 1.25rem;
   background: var(--paper);
@@ -545,9 +536,41 @@
   border-radius: 2px;
   display: flex;
   flex-direction: column;
+  max-width: 56rem;
 }
-/* Push the payback (and any footnote) to the bottom of the stretched card */
-.sizing__price .sizing-price__payback { margin-top: auto; }
+/* Two-column body: cost breakdown (left), Year-1 outcome (right). Each
+   column has its own kicker head, then content. The two columns are
+   separated by a dashed vertical rule. Stacks below 720px. */
+.sizing-price__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 0;
+  align-items: stretch;
+}
+.sizing-price__col {
+  padding: 0 1.4rem;
+  display: flex;
+  flex-direction: column;
+}
+.sizing-price__col:first-child  { padding-left: 0; }
+.sizing-price__col:last-child   { padding-right: 0; border-left: 1px dashed var(--rule-soft); }
+.sizing-price__col-head {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+  display: block;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px dashed var(--rule-soft);
+}
+@media (max-width: 720px) {
+  .sizing-price__grid { grid-template-columns: 1fr; gap: 1rem; }
+  .sizing-price__col   { padding: 0; }
+  .sizing-price__col:last-child { border-left: 0; border-top: 1px dashed var(--rule-soft); padding-top: 1rem; }
+}
+
 .sizing-price__title {
   font-family: var(--mono);
   font-size: 0.62rem;
@@ -608,62 +631,74 @@
   font-size: 1.15rem;
 }
 
-/* Year-1 savings block — sits between the breakdown and the payback */
+/* Year-1 savings block — top of the right column */
 .sizing-price__savings {
-  margin: 1rem 0 0.5rem;
-  padding: 0.7rem 0.85rem;
-  background: var(--paper-deep);
-  border-radius: 2px;
   display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: baseline;
-  gap: 0.2rem 0.6rem;
+  grid-template-columns: 1fr;
+  gap: 0.25rem;
+  margin-bottom: 0.85rem;
 }
 .sizing-price__savings-label {
   font-family: var(--mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.18em;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-mute);
 }
 .sizing-price__savings-val {
-  font-family: var(--mono);
+  font-family: var(--serif);
+  font-style: italic;
+  font-variation-settings: 'opsz' 60, 'SOFT' 70, 'wght' 400;
+  font-size: 1.85rem;
   font-feature-settings: 'tnum';
-  font-size: 1.05rem;
-  font-weight: 500;
   color: var(--sage);
-  text-align: right;
+  letter-spacing: -0.02em;
+  line-height: 1;
 }
 .sizing-price__savings-unit {
-  font-size: 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
   color: var(--ink-mute);
-  margin-left: 0.15rem;
+  margin-left: 0.25rem;
+  font-style: normal;
   font-weight: 400;
+  letter-spacing: 0.04em;
 }
 .sizing-price__savings-pct {
-  grid-column: 1 / -1;
   font-family: var(--serif);
   font-style: italic;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--ink-soft);
   margin-top: 0.15rem;
+  line-height: 1.4;
 }
 
+/* Payback line — pinned to the bottom of the right column so the two
+   columns visually balance (cost total at bottom-left, payback at bottom-right). */
 .sizing-price__payback {
-  margin-top: 0.5rem;
-  padding-top: 0.65rem;
-  border-top: 1px dashed var(--rule-soft);
+  margin: auto 0 0;
+  padding-top: 0.85rem;
+  border-top: 1.5px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.sizing-price__payback-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-mute);
+}
+.sizing-price__payback-val {
   font-family: var(--serif);
   font-style: italic;
-  font-variation-settings: 'opsz' 14, 'SOFT' 30, 'wght' 400;
-  font-size: 0.92rem;
-  color: var(--ink-soft);
-  line-height: 1.45;
-}
-.sizing-price__payback strong {
+  font-variation-settings: 'opsz' 60, 'SOFT' 70, 'wght' 400;
+  font-size: 1.5rem;
   color: var(--amber-deep);
-  font-weight: 500;
-  font-style: normal;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-weight: 400;
 }
 .sizing-price__footnote {
   margin-top: 0.7rem;

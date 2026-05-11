@@ -427,10 +427,41 @@ function buildBillPane(systemId, state, r) {
     ));
   }
 
+  // Outage backup value & inverter standby drain — hybrid only, only when
+  // outages are non-zero. Without these rows the "You keep" total understates
+  // hybrid's true Year-1 cash benefit (the §8 cashflow chart already includes
+  // them, so the bill pane was telling a different story than the payback
+  // chart for hybrid users).
+  const outageNet = (r.outage && r.outage.net) || 0;
+  const standbyDrain = r.standby_drain || 0;
+  const hasOutageValue = systemId === 'Hybrid' && outageNet > 0;
+  const monthlyOutage = outageNet / 12;
+  const monthlyStandby = standbyDrain / 12;
+  const monthlyTotal = monthlySaved + (hasOutageValue ? monthlyOutage - monthlyStandby : 0);
+  if (hasOutageValue) {
+    const outageSub = `${(r.outage.deliveredKwh || 0).toFixed(0)} kWh/yr backed up · valued at retail ×2`;
+    calc.appendChild(calcRow(
+      '+',
+      'Outage backup',
+      valueNode(fmtINR(monthlyOutage), '/mo', 'save'),
+      'minus',
+      outageSub,
+    ));
+    if (standbyDrain > 0) {
+      calc.appendChild(calcRow(
+        '−',
+        'Inverter standby',
+        valueNode(fmtINR(monthlyStandby), '/mo', 'minus'),
+        'minus',
+        '30 W continuous draw',
+      ));
+    }
+  }
+
   calc.appendChild(calcRow(
     ' ',
     'You keep',
-    valueNode(fmtINR(monthlySaved), '/mo', 'save'),
+    valueNode(fmtINR(monthlyTotal), '/mo', 'save'),
     'save',
   ));
   wrap.appendChild(calc);
@@ -492,40 +523,52 @@ export function renderSizingPrice(state) {
   const r = computeFull(state);
   const c = r.costs;
   const monthlySaved = r.savings_yr1.annual / 12;
+  const payback = r.metrics.payback_simple;
 
   host.appendChild(el('span', { class: 'sizing-price__title' }, `Price for ${state.system_kw} kW · ${SYS_TITLE[state.system_type]}`));
 
+  // Two-column body: cost breakdown left, year-1 outcome right.
+  // Tightens the panel so rows don't sprawl across the full section width.
+  const grid = el('div', { class: 'sizing-price__grid' });
+
+  // Left — cost breakdown
+  const left = el('div', { class: 'sizing-price__col sizing-price__col--cost' });
+  left.appendChild(el('span', { class: 'sizing-price__col-head' }, 'You pay (one-time)'));
   const breakdown = el('div', { class: 'sizing-price__breakdown' });
   breakdown.appendChild(priceRow('Gross system cost', fmtINR(c.gross)));
   if (c.battery_cost > 0) {
     breakdown.appendChild(priceRow('  of which battery (' + c.battery_kwh + ' kWh)', fmtINR(c.battery_cost), 'sub'));
   }
   if (c.central_subsidy > 0) {
-    breakdown.appendChild(priceRow('Central subsidy (PM Surya Ghar)', '−' + fmtINR(c.central_subsidy), 'minus'));
+    const subsidyLabel = state.system_kw > 3
+      ? `Central subsidy (PM Surya Ghar · capped at 3 kW)`
+      : `Central subsidy (PM Surya Ghar)`;
+    breakdown.appendChild(priceRow(subsidyLabel, '−' + fmtINR(c.central_subsidy), 'minus'));
   }
   if (c.state_subsidy > 0) {
     breakdown.appendChild(priceRow('State subsidy (' + r.discom.state + ')', '−' + fmtINR(c.state_subsidy), 'minus'));
   }
-  breakdown.appendChild(priceRow('You pay (one-time)', fmtINR(c.net), 'total'));
-  host.appendChild(breakdown);
+  breakdown.appendChild(priceRow('Net you pay', fmtINR(c.net), 'total'));
+  left.appendChild(breakdown);
 
-  // Year-1 savings + bill-coverage — gives the card more density when stretched
+  // Right — year-1 outcome
+  const right = el('div', { class: 'sizing-price__col sizing-price__col--gain' });
+  right.appendChild(el('span', { class: 'sizing-price__col-head' }, 'Year-1 outcome'));
   const savings = el('div', { class: 'sizing-price__savings' });
-  savings.appendChild(el('span', { class: 'sizing-price__savings-label' }, 'Year-1 savings'));
+  savings.appendChild(el('span', { class: 'sizing-price__savings-label' }, 'Bill saved year 1'));
   savings.appendChild(el('span', { class: 'sizing-price__savings-val' },
     fmtINR(r.savings_yr1.annual), el('span', { class: 'sizing-price__savings-unit' }, '/yr')));
   savings.appendChild(el('span', { class: 'sizing-price__savings-pct' },
-    `covers ${(r.savings_yr1.pct_of_bill * 100).toFixed(0)}% of your annual bill`));
-  host.appendChild(savings);
+    `covers ${(r.savings_yr1.pct_of_bill * 100).toFixed(0)}% of your annual bill · ${fmtINR(monthlySaved)}/mo`));
+  right.appendChild(savings);
 
-  const payback = r.metrics.payback_simple;
-  if (payback != null && isFinite(payback)) {
-    const pb = el('p', { class: 'sizing-price__payback' });
-    pb.appendChild(document.createTextNode('Paid back in '));
-    pb.appendChild(el('strong', {}, payback.toFixed(1) + ' years'));
-    pb.appendChild(document.createTextNode(' from ' + fmtINR(monthlySaved) + '/mo savings.'));
-    host.appendChild(pb);
-  }
+  // Payback intentionally omitted here — §8 owns the payback story so we
+  // don't repeat the same number. The right column closes with the
+  // "Bill saved year 1" block above.
+
+  grid.appendChild(left);
+  grid.appendChild(right);
+  host.appendChild(grid);
 
   // Footnote — explain what's NOT in the subsidy line for off-grid
   if (state.system_type === 'OffGrid') {
